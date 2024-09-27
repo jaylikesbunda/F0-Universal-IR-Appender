@@ -172,11 +172,13 @@ function processFiles() {
                     // Append each file's content to the universal IR file content
                     let updatedContent = universalIRContent;
 
-                    fileContents.forEach(content => {
-                        const deviceInfo = extractDeviceInfo(content);
+                    Array.from(files).forEach((file, index) => {
+                        const content = fileContents[index];
+                        const fileName = file.name;
+                        const deviceInfo = extractDeviceInfo(content, fileName);
                         const filteredContent = filterIRContent(content, allowedButtonNames, existingSignalsIndex);
                         if (filteredContent) {
-                            // Add a newline and the model comment line
+                            // Add a newline and the model comment line with a following '#'
                             const commentLine = `\n# Model: ${deviceInfo}\n#\n`;
                             // Append the comment and filtered content
                             updatedContent += `${commentLine}${filteredContent.trim()}`;
@@ -201,6 +203,7 @@ function processFiles() {
         });
 }
 
+
 // Helper function to read file content
 function readFileContent(file) {
     return new Promise((resolve, reject) => {
@@ -213,13 +216,14 @@ function readFileContent(file) {
     });
 }
 
-// Helper function to extract device info from IR file content
-function extractDeviceInfo(content) {
+// Helper function to extract device info from IR file content or file name
+function extractDeviceInfo(content, fileName) {
     const lines = content.split('\n');
     let brand = '';
     let model = '';
+    let extractedFromContent = false;
 
-    // Look for lines starting with '#' that contain device info
+    // Attempt to extract Brand and Model from content
     for (let line of lines) {
         line = line.trim();
         if (line.startsWith('#')) {
@@ -236,6 +240,7 @@ function extractDeviceInfo(content) {
                 }
             }
             if (brand && model) {
+                extractedFromContent = true;
                 break;
             }
         }
@@ -243,13 +248,24 @@ function extractDeviceInfo(content) {
 
     let infoLine = `${brand} ${model}`.trim();
 
-    // If no info found, default to 'Unknown Device'
+    // If Brand and Model are not found in content, extract from file name
     if (!infoLine) {
-        infoLine = 'Unknown Device';
+        const fileNameMatch = fileName.match(/^([^_]+)_([^\.]+)\.ir$/i);
+        if (fileNameMatch) {
+            brand = fileNameMatch[1].trim();
+            model = fileNameMatch[2].trim();
+            infoLine = `${brand} ${model}`;
+            alert(`Brand and Model not found in content for file "${fileName}". Inferred from file name: ${infoLine}`);
+        } else {
+            // If file name does not match expected pattern
+            infoLine = 'Unknown Device';
+            console.warn(`Unable to extract Brand and Model from content or file name for file: ${fileName}`);
+        }
     }
 
     return infoLine;
 }
+
 
 // Helper function to parse IR file signals
 function parseIRFileSignals(content, allowedButtonNames) {
@@ -356,7 +372,7 @@ function filterIRContent(content, allowedButtonNames, existingSignalsIndex) {
                 if (!isDuplicateSignal(currentSignal, existingSignalsIndex)) {
                     // Add signal to filtered content
                     filteredContent += signalLines.join('\n') + '\n#\n';
-                    // Do NOT update existingSignalsIndex here
+                    // Do NOT update existingSignalsIndex here to allow multiple files to add same new signals
                 } else {
                     console.log(`Duplicate signal found: ${currentSignal.name}, skipping.`);
                 }
@@ -382,10 +398,6 @@ function filterIRContent(content, allowedButtonNames, existingSignalsIndex) {
                     currentSignal.address = line.split(':')[1].trim();
                 } else if (line.trim().startsWith('command:')) {
                     currentSignal.command = line.split(':')[1].trim();
-                } else if (line.trim().startsWith('frequency:')) {
-                    currentSignal.frequency = line.split(':')[1].trim();
-                } else if (line.trim().startsWith('data:')) {
-                    currentSignal.data = line.split(':')[1].trim();
                 }
             }
         }
@@ -393,6 +405,7 @@ function filterIRContent(content, allowedButtonNames, existingSignalsIndex) {
 
     return filteredContent.trim();
 }
+
 
 // Helper function to download the updated file
 function downloadFile(content, filename) {
