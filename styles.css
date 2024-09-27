@@ -40,6 +40,90 @@ body.dark-mode {
     background: linear-gradient(135deg, var(--dark-background), #000000);
     color: var(--dark-text);
 }
+.summary-container {
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.summary-container h2 {
+    margin-bottom: 15px;
+}
+
+.summary-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.summary-item {
+    flex: 1 1 200px;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.summary-label {
+    font-weight: bold;
+}
+
+.summary-value {
+    /* Colors will be dynamically assigned via JavaScript */
+}
+
+.summary-value.success {
+    color: green;
+}
+
+.summary-value.error {
+    color: red;
+}
+
+.summary-value.warning {
+    color: orange;
+}
+
+.detailed-summary {
+    margin-top: 20px;
+}
+
+.detailed-summary table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.detailed-summary th, .detailed-summary td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.detailed-summary th {
+    background-color: #f2f2f2;
+}
+
+.export-button, .copy-button {
+    margin-top: 20px;
+    padding: 10px 15px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.export-button:hover, .copy-button:hover {
+    background-color: #0056b3;
+}
+
+.copy-button {
+    background-color: #28a745;
+}
+
+.copy-button:hover {
+    background-color: #1e7e34;
+}
 
 /* Container */
 .container {
