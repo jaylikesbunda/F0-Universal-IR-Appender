@@ -856,45 +856,72 @@ function isDuplicateSignal(signal, existingSignalsIndex) {
     }
     return false;
 }
-
+// Function to parse universal IR file and index existing signals
 function parseUniversalIRFile(content) {
+    if (!content) {
+        console.warn('Empty content provided to parseUniversalIRFile.');
+        return new Map();
+    }
+
     const lines = content.split('\n');
     const existingSignals = new Map();
     let currentSignal = {};
     let isRawSignal = false;
     let rawLines = [];
 
-    for (let i = 0; i <= lines.length; i++) {
-        let line = (i < lines.length) ? lines[i].trim() : '#';
-        if (line.startsWith('#') || line === '') {
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i].trim();
+        let nextLine = (i + 1 < lines.length) ? lines[i + 1].trim() : '#'; // Boundary check
+
+        // Debugging logs
+        console.log(`Processing line ${i}: ${line}`);
+        console.log(`Next line ${i + 1}: ${nextLine}`);
+
+        if (line.startsWith('#') || line === '' || i === lines.length - 1) {
             if (isValidSignal(currentSignal)) {
                 const key = generateSignalKey(currentSignal);
                 existingSignals.set(key, currentSignal);
+                console.log(`Added signal: ${JSON.stringify(currentSignal)}`);
+            } else {
+                console.log(`Invalid or incomplete signal at line ${i}.`);
             }
             currentSignal = {};
             isRawSignal = false;
             rawLines = [];
         } else {
-            if (line.startsWith('name:')) currentSignal.name = line.split(':')[1].trim();
-            else if (line.startsWith('type: raw')) {
+            if (line.startsWith('name:')) {
+                currentSignal.name = line.split(':')[1].trim();
+                console.log(`Extracted name: ${currentSignal.name}`);
+            } else if (line.startsWith('type: raw')) {
                 isRawSignal = true;
                 rawLines.push(line);
+                console.log('Detected raw signal type.');
             } else if (isRawSignal) {
                 rawLines.push(line);
+                console.log(`Appending to raw signal: ${line}`);
             } else {
-                if (line.startsWith('protocol:')) currentSignal.protocol = line.split(':')[1].trim();
-                else if (line.startsWith('address:')) currentSignal.address = line.split(':')[1].trim();
-                else if (line.startsWith('command:')) currentSignal.command = line.split(':')[1].trim();
+                if (line.startsWith('protocol:')) {
+                    currentSignal.protocol = line.split(':')[1].trim();
+                    console.log(`Extracted protocol: ${currentSignal.protocol}`);
+                } else if (line.startsWith('address:')) {
+                    currentSignal.address = line.split(':')[1].trim();
+                    console.log(`Extracted address: ${currentSignal.address}`);
+                } else if (line.startsWith('command:')) {
+                    currentSignal.command = line.split(':')[1].trim();
+                    console.log(`Extracted command: ${currentSignal.command}`);
+                }
             }
         }
-        
-        if (isRawSignal && (i === lines.length || lines[i+1].trim().startsWith('#'))) {
+
+        if (isRawSignal && (nextLine.startsWith('#') || nextLine === '')) {
             currentSignal.raw = rawLines.join('\n');
+            console.log(`Finalized raw signal: ${currentSignal.raw}`);
         }
     }
 
     return existingSignals;
 }
+
 // Improved helper function to parse IR file signals
 function parseIRFileSignals(content, allowedButtonNames) {
     const allowedButtonNamesLower = new Set(allowedButtonNames.map(name => name.toLowerCase()));
