@@ -45,7 +45,7 @@
 
         body.dark-mode {
             background: linear-gradient(135deg, var(--dark-background), #000000);
-            color: var(--dark-text);
+            color: #000;
         }
 
         /* Container */
@@ -122,7 +122,20 @@
             margin-top: 0;
             color: var(--flipper-orange);
         }
+        .button-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
 
+        .button-summary div {
+            background-color: #f0f0f0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 14px;
+        }
         /* Inputs, Select, and Textarea */
         input, select, textarea {
             width: 100%;
@@ -595,6 +608,13 @@
                     <span id="error-signals" class="summary-value">0</span>
                 </div>
             </div>
+            
+            <!-- New Button Summary Section -->
+            <h3>Button Summary</h3>
+            <div id="button-summary" class="button-summary">
+                <!-- Button summary will be injected here -->
+            </div>
+
             <div class="summary-actions">
                 <button id="export-summary-btn" class="export-button">Export Summary</button>
                 <button id="copy-summary-btn" class="copy-button">Copy Summary</button>
@@ -612,14 +632,6 @@
     <div class="theme-toggle">
         <button id="theme-toggle-button">Switch to Dark Mode</button>
     </div>
-
-    <!-- Optional: Informational Text (Commented Out) -->
-    <!--
-    <h2 class="explanatory-text">
-        This tool appends your IR files to the universal IR file according to the
-        <a href="https://github.com/flipperdevices/flipperzero-firmware/blob/dev/applications/main/infrared/resources/infrared/assets/" target="_blank">Flipper Zero Universal Remote Guidelines</a>.
-    </h2>
-    -->
 
     <script src="script.js"></script>
 </body>
