@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Universal IR Appender v1.1</title>
+    <title>Universal IR Appender v1.2</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         /* Color variables for flexibility */
@@ -537,7 +537,7 @@
 </head>
 <body class="light-mode">
     <div class="container">
-        <h1>Universal IR Appender v1.1</h1>
+        <h1>Universal IR Appender v1.2</h1>
 
         <!-- Instructions -->
         <div class="instructions">
@@ -566,6 +566,11 @@
         </div>
         <p id="file-count">0 .ir files selected</p>
         <p id="browser-warning" style="display: none; color: red;">Your browser does not support folder selection. Please select multiple .ir files individually.</p>
+
+        <label for="device-type">Select the Universal File</label>
+        <select id="repo-select">
+            <!-- Options will be populated dynamically -->
+          </select>
 
         <!-- Device type -->
         <label for="device-type">Select the Device Type</label>

@@ -1,44 +1,381 @@
-// DOM Elements
-const fileInput = document.getElementById('file-input');
-const deviceTypeSelect = document.getElementById('device-type');
-const processButton = document.getElementById('process-btn');
-const themeToggleButton = document.getElementById('theme-toggle-button');
-const body = document.body;
-
-// Progress Elements
-const progressContainer = document.getElementById('progress-container');
-const progressBar = document.getElementById('progress-bar');
-
-// Summary Elements
-const summary = document.getElementById('summary');
-const totalFilesElem = document.getElementById('total-files');
-const totalSignalsElem = document.getElementById('total-signals');
-const newSignalsElem = document.getElementById('new-signals');
-const duplicateSignalsElem = document.getElementById('duplicate-signals');
-const errorSignalsElem = document.getElementById('error-signals');
-
-// Notification Element
-const notification = document.getElementById('notification');
-
-// Export and Copy Buttons
-const exportSummaryBtn = document.getElementById('export-summary-btn');
-const copySummaryBtn = document.getElementById('copy-summary-btn');
-
-// File Count and Browser Warning
-const fileCountElem = document.getElementById('file-count');
-const browserWarningElem = document.getElementById('browser-warning');
-
-// Allowed buttons per device type
-const allowedButtons = {
+const elements = {
+    fileInput: document.getElementById('file-input'),
+    repoSelect: document.getElementById('repo-select'), // New element for repository selection
+    deviceTypeSelect: document.getElementById('device-type'),
+    processButton: document.getElementById('process-btn'),
+    themeToggleButton: document.getElementById('theme-toggle-button'),
+    body: document.body,
+    progressContainer: document.getElementById('progress-container'),
+    progressBar: document.getElementById('progress-bar'),
+    summary: document.getElementById('summary'),
+    totalFilesElem: document.getElementById('total-files'),
+    totalSignalsElem: document.getElementById('total-signals'),
+    newSignalsElem: document.getElementById('new-signals'),
+    duplicateSignalsElem: document.getElementById('duplicate-signals'),
+    errorSignalsElem: document.getElementById('error-signals'),
+    notification: document.getElementById('notification'),
+    exportSummaryBtn: document.getElementById('export-summary-btn'),
+    copySummaryBtn: document.getElementById('copy-summary-btn'),
+    fileCountElem: document.getElementById('file-count'),
+    browserWarningElem: document.getElementById('browser-warning'),
+    buttonSummaryElem: document.getElementById('button-summary')
+};
+// Updated allowedButtons object
+let allowedButtons = {
     'TV': ['Power', 'Vol_up', 'Vol_dn', 'Ch_next', 'Ch_prev', 'Mute'],
     'Audio Player': ['Power', 'Vol_up', 'Vol_dn', 'Next', 'Prev', 'Mute', 'Play', 'Pause'],
     'Projector': ['Power', 'Vol_up', 'Vol_dn', 'Mute'],
     'Air Conditioner': ['Off', 'Cool_hi', 'Cool_lo', 'Heat_hi', 'Heat_lo', 'Dh']
 };
 
+const buttonNameMapping = {
+    "TV": {
+        // Power
+        "power": "Power",
+        "pwr": "Power",
+        "pw": "Power",
+        "p": "Power",
+        "on(?:_)?off": "Power",
+        "on/off": "Power",
+        "standby": "Power",
+        "stby": "Power",
+        "switch": "Power",
+        "sw": "Power",
+        "toggle": "Power",
+        "tgl": "Power",
+        "powr": "Power",
+        "power_on": "Power",
+        "power_off": "Power",
+
+        // Volume Up
+        "vol(?:_)?up": "Vol_up",
+        "v(?:_)?up": "Vol_up",
+        "v(?:_)?\\+": "Vol_up",
+        "vu": "Vol_up",
+        "volume(?:_)?up": "Vol_up",
+        "vol(?:_)?increase": "Vol_up",
+        "vol(?:_)?inc": "Vol_up",
+        "vol(?:_)?\\+": "Vol_up",
+        "v\\+": "Vol_up",
+        "louder": "Vol_up",
+        "volume(?:_)?raise": "Vol_up",
+        "audio(?:_)?up": "Vol_up",
+        "au(?:_)?up": "Vol_up",
+        "vol_plus": "Vol_up",
+        "volume_plus": "Vol_up",
+
+        // Volume Down
+        "vol(?:_)?down": "Vol_dn",
+        "vol(?:_)?dn": "Vol_dn",
+        "v(?:_)?down": "Vol_dn",
+        "v(?:_)?dn": "Vol_dn",
+        "v(?:_)?\\-": "Vol_dn",
+        "vd": "Vol_dn",
+        "volume(?:_)?down": "Vol_dn",
+        "vol(?:_)?decrease": "Vol_dn",
+        "vol(?:_)?dec": "Vol_dn",
+        "vol(?:_)?dwn": "Vol_dn",
+        "vol(?:_)?\\-": "Vol_dn",
+        "v\\-": "Vol_dn",
+        "softer": "Vol_dn",
+        "volume(?:_)?lower": "Vol_dn",
+        "audio(?:_)?down": "Vol_dn",
+        "au(?:_)?dn": "Vol_dn",
+        "vol_minus": "Vol_dn",
+        "volume_minus": "Vol_dn",
+
+        // Channel Next
+        "ch(?:_)?up": "Ch_next",
+        "ch(?:_)?\\+": "Ch_next",
+        "c(?:_)?up": "Ch_next",
+        "c\\+": "Ch_next",
+        "cu": "Ch_next",
+        "channel(?:_)?up": "Ch_next",
+        "ch(?:_)?next": "Ch_next",
+        "next(?:_)?channel": "Ch_next",
+        "channel(?:_)?forward": "Ch_next",
+        "ch(?:_)?fwd": "Ch_next",
+        "prog(?:_)?up": "Ch_next",
+        "program(?:_)?up": "Ch_next",
+        "p(?:_)?up": "Ch_next",
+        "pu": "Ch_next",
+        "channel_plus": "Ch_next",
+
+        // Channel Previous
+        "ch(?:_)?down": "Ch_prev",
+        "ch(?:_)?dn": "Ch_prev",
+        "ch(?:_)?\\-": "Ch_prev",
+        "c(?:_)?down": "Ch_prev",
+        "c(?:_)?dn": "Ch_prev",
+        "c\\-": "Ch_prev",
+        "cd": "Ch_prev",
+        "channel(?:_)?down": "Ch_prev",
+        "ch(?:_)?prev": "Ch_prev",
+        "previous(?:_)?channel": "Ch_prev",
+        "channel(?:_)?back": "Ch_prev",
+        "ch(?:_)?bk": "Ch_prev",
+        "prog(?:_)?down": "Ch_prev",
+        "program(?:_)?down": "Ch_prev",
+        "p(?:_)?down": "Ch_prev",
+        "p(?:_)?dn": "Ch_prev",
+        "pd": "Ch_prev",
+        "channel_minus": "Ch_prev",
+
+        // Mute
+        "mute": "Mute",
+        "mu": "Mute",
+        "mt": "Mute",
+        "silence": "Mute",
+        "sil": "Mute",
+        "quiet": "Mute",
+        "qt": "Mute",
+        "audio(?:_)?off": "Mute",
+        "sound(?:_)?off": "Mute",
+        "no(?:_)?sound": "Mute",
+        "mte": "Mute",
+        "mute_toggle": "Mute"
+    },
+    "Audio": {
+        // Power
+        "power": "Power",
+        "pwr": "Power",
+        "pw": "Power",
+        "p": "Power",
+        "on(?:_)?off": "Power",
+        "on/off": "Power",
+        "standby": "Power",
+        "stby": "Power",
+        "switch": "Power",
+        "sw": "Power",
+        "toggle": "Power",
+        "tgl": "Power",
+        "powr": "Power",
+        "power_on": "Power",
+        "power_off": "Power",
+
+        // Volume Up
+        "vol(?:_)?up": "Vol_up",
+        "v(?:_)?up": "Vol_up",
+        "v(?:_)?\\+": "Vol_up",
+        "vu": "Vol_up",
+        "volume(?:_)?up": "Vol_up",
+        "vol(?:_)?increase": "Vol_up",
+        "vol(?:_)?inc": "Vol_up",
+        "vol(?:_)?\\+": "Vol_up",
+        "v\\+": "Vol_up",
+        "louder": "Vol_up",
+        "volume(?:_)?raise": "Vol_up",
+        "audio(?:_)?up": "Vol_up",
+        "au(?:_)?up": "Vol_up",
+        "vol_plus": "Vol_up",
+        "volume_plus": "Vol_up",
+
+        // Volume Down
+        "vol(?:_)?down": "Vol_dn",
+        "vol(?:_)?dn": "Vol_dn",
+        "v(?:_)?down": "Vol_dn",
+        "v(?:_)?dn": "Vol_dn",
+        "v(?:_)?\\-": "Vol_dn",
+        "vd": "Vol_dn",
+        "volume(?:_)?down": "Vol_dn",
+        "vol(?:_)?decrease": "Vol_dn",
+        "vol(?:_)?dec": "Vol_dn",
+        "vol(?:_)?dwn": "Vol_dn",
+        "vol(?:_)?\\-": "Vol_dn",
+        "v\\-": "Vol_dn",
+        "softer": "Vol_dn",
+        "volume(?:_)?lower": "Vol_dn",
+        "audio(?:_)?down": "Vol_dn",
+        "au(?:_)?dn": "Vol_dn",
+        "vol_minus": "Vol_dn",
+        "volume_minus": "Vol_dn",
+
+        // Next
+        "next": "Next",
+        "nxt": "Next",
+        "nx": "Next",
+        "n": "Next",
+        "skip(?:_)?fwd": "Next",
+        "sk(?:_)?f": "Next",
+        "forward": "Next",
+        "fwd": "Next",
+        "ff": "Next",
+        "fast(?:_)?forward": "Next",
+        "track(?:_)?forward": "Next",
+        "tr(?:_)?fwd": "Next",
+        "next(?:_)?track": "Next",
+        "skip(?:_)?ahead": "Next",
+        "track_next": "Next",
+
+        // Previous
+        "prev(?:ious)?": "Prev",
+        "prv": "Prev",
+        "pr": "Prev",
+        "skip(?:_)?back": "Prev",
+        "sk(?:_)?b": "Prev",
+        "rewind": "Prev",
+        "rew": "Prev",
+        "rw": "Prev",
+        "back": "Prev",
+        "bk": "Prev",
+        "track(?:_)?back": "Prev",
+        "tr(?:_)?bk": "Prev",
+        "previous(?:_)?track": "Prev",
+        "skip(?:_)?previous": "Prev",
+        "track_prev": "Prev",
+
+        // Play
+        "play": "Play",
+        "pl": "Play",
+        "ply": "Play",
+        "start": "Play",
+        "strt": "Play",
+        "resume": "Play",
+        "rsm": "Play",
+        "begin": "Play",
+        "bgn": "Play",
+        "playback": "Play",
+        "pb": "Play",
+
+        // Pause
+        "pause": "Pause",
+        "pse": "Pause",
+        "ps": "Pause",
+        "hold": "Pause",
+        "hld": "Pause",
+        "stop": "Pause",
+        "stp": "Pause",
+        "freeze": "Pause",
+        "frz": "Pause",
+        "suspend": "Pause",
+        "spnd": "Pause",
+        "break": "Pause",
+        "brk": "Pause",
+
+        // Mute
+        "mute": "Mute",
+        "mu": "Mute",
+        "mt": "Mute",
+        "silence": "Mute",
+        "sil": "Mute",
+        "quiet": "Mute",
+        "qt": "Mute",
+        "audio(?:_)?off": "Mute",
+        "sound(?:_)?off": "Mute",
+        "no(?:_)?sound": "Mute",
+        "mte": "Mute",
+        "mute_toggle": "Mute"
+    },
+    "AC": {
+        // Off
+        "off": "Off",
+        "of": "Off",
+        "power": "Off",
+        "shutdown": "Off",
+        "shtdwn": "Off",
+        "shut(?:_)?down": "Off",
+        "power(?:_)?off": "Off",
+        "pwr(?:_)?off": "Off",
+        "pw(?:_)?off": "Off",
+        "p(?:_)?off": "Off",
+        "turn(?:_)?off": "Off",
+        "switch(?:_)?off": "Off",
+        "sw(?:_)?off": "Off",
+
+        // Dehumidify
+        "dh": "Dh",
+        "dehumidify": "Dh",
+        "dehum": "Dh",
+        "dhum": "Dh",
+        "dry": "Dh",
+        "dehumid": "Dh",
+        "moisture(?:_)?remove": "Dh",
+        "mst(?:_)?rmv": "Dh",
+        "humidity(?:_)?control": "Dh",
+        "hum(?:_)?ctrl": "Dh",
+        "water(?:_)?remove": "Dh",
+        "wtr(?:_)?rmv": "Dh",
+
+        // Cool High
+        "cool(?:_)?hi": "Cool_hi",
+        "ch": "Cool_hi",
+        "cool(?:_)?high": "Cool_hi",
+        "high(?:_)?cool": "Cool_hi",
+        "hi(?:_)?cool": "Cool_hi",
+        "max(?:_)?cool": "Cool_hi",
+        "cool(?:_)?max": "Cool_hi",
+        "strong(?:_)?cool": "Cool_hi",
+        "str(?:_)?cool": "Cool_hi",
+
+        // Cool Low
+        "cool(?:_)?lo": "Cool_lo",
+        "cl": "Cool_lo",
+        "cool(?:_)?low": "Cool_lo",
+        "low(?:_)?cool": "Cool_lo",
+        "min(?:_)?cool": "Cool_lo",
+        "cool(?:_)?min": "Cool_lo",
+        "gentle(?:_)?cool": "Cool_lo",
+        "gnt(?:_)?cool": "Cool_lo",
+
+        // Heat High
+        "heat(?:_)?hi": "Heat_hi",
+        "hh": "Heat_hi",
+        "heat(?:_)?high": "Heat_hi",
+        "high(?:_)?heat": "Heat_hi",
+        "hi(?:_)?heat": "Heat_hi",
+        "max(?:_)?heat": "Heat_hi",
+        "heat(?:_)?max": "Heat_hi",
+        "strong(?:_)?heat": "Heat_hi",
+        "str(?:_)?heat": "Heat_hi",
+
+        // Heat Low
+        "heat(?:_)?lo": "Heat_lo",
+        "hl": "Heat_lo",
+        "heat(?:_)?low": "Heat_lo",
+        "low(?:_)?heat": "Heat_lo",
+        "min(?:_)?heat": "Heat_lo",
+        "heat(?:_)?min": "Heat_lo",
+        "gentle(?:_)?heat": "Heat_lo",
+        "gnt(?:_)?heat": "Heat_lo"
+    }
+};
+
+function matchAndRenameButton(buttonName, deviceType) {
+    const normalizedButton = normalizeButtonName(buttonName);
+    const mappings = buttonNameMapping[deviceType] || {};
+    
+    for (const [pattern, standardName] of Object.entries(mappings)) {
+        const regex = new RegExp(`^${pattern}$`, 'i');
+        if (regex.test(normalizedButton)) {
+            return standardName;
+        }
+    }
+    
+    // If no match found, return the normalized button name
+    return normalizedButton;
+}
+
+const REPOSITORIES = {
+    'Next-Flip': {
+        owner: 'Next-Flip',
+        repo: 'Momentum-Firmware',
+        branch: 'dev'
+    },
+    'DarkFlippers': {
+        owner: 'DarkFlippers',
+        repo: 'unleashed-firmware',
+        branch: 'dev'
+    },
+    'Flipper Devices': {
+        owner: 'flipperdevices',
+        repo: 'flipperzero-firmware',
+        branch: 'dev'
+    }
+};
+
 // GitHub API constants
 const GITHUB_API_BASE = 'https://api.github.com/repos/flipperdevices/flipperzero-firmware';
-const IR_ASSETS_PATH = 'contents/applications/main/infrared/resources/infrared/assets';
+const IR_ASSETS_PATH = 'applications/main/infrared/resources/infrared/assets';
 const BRANCH = 'dev';
 
 // Event Listeners
@@ -46,16 +383,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Theme toggle
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
-        body.classList.remove('light-mode', 'dark-mode');
-        body.classList.add(savedTheme);
+        elements.body.classList.remove('light-mode', 'dark-mode');
+        elements.body.classList.add(savedTheme);
         updateButtonText(savedTheme);
     }
 
-    themeToggleButton.addEventListener('click', () => {
-        const currentTheme = body.classList.contains('light-mode') ? 'light-mode' : 'dark-mode';
+    elements.themeToggleButton.addEventListener('click', () => {
+        const currentTheme = elements.body.classList.contains('light-mode') ? 'light-mode' : 'dark-mode';
         const newTheme = currentTheme === 'light-mode' ? 'dark-mode' : 'light-mode';
-        body.classList.remove(currentTheme);
-        body.classList.add(newTheme);
+        elements.body.classList.remove(currentTheme);
+        elements.body.classList.add(newTheme);
         localStorage.setItem('theme', newTheme);
         updateButtonText(newTheme);
     });
@@ -63,51 +400,140 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check for 'webkitdirectory' support
     const supportsWebkitDirectory = 'webkitdirectory' in document.createElement('input');
     if (!supportsWebkitDirectory) {
-        browserWarningElem.style.display = 'block';
+        elements.browserWarningElem.style.display = 'block';
     }
 
     // Update file input label and display file count
-    fileInput.addEventListener('change', (event) => {
+    elements.fileInput.addEventListener('change', (event) => {
         const files = event.target.files;
         const irFiles = Array.from(files).filter(file => file.name.toLowerCase().endsWith('.ir'));
         const fileCount = irFiles.length;
-        fileCountElem.textContent = `${fileCount} .ir file${fileCount !== 1 ? 's' : ''} selected`;
-        totalFilesElem.textContent = fileCount;
+        elements.fileCountElem.textContent = `${fileCount} .ir file${fileCount !== 1 ? 's' : ''} selected`;
+        elements.totalFilesElem.textContent = fileCount;
         resetSummary();
     });
 
     // Process files
-    processButton.addEventListener('click', () => {
-        const files = Array.from(fileInput.files).filter(file => file.name.toLowerCase().endsWith('.ir'));
+    elements.processButton.addEventListener('click', () => {
+        const files = Array.from(elements.fileInput.files).filter(file => file.name.toLowerCase().endsWith('.ir'));
         processFiles(files);
     });
 
+    elements.repoSelect.addEventListener('change', async () => {
+        await updateDeviceTypeOptions();
+    });
+    
     // Export summary
-    exportSummaryBtn.addEventListener('click', exportSummary);
+    elements.exportSummaryBtn.addEventListener('click', exportSummary);
 
     // Copy summary
-    copySummaryBtn.addEventListener('click', copySummaryToClipboard);
+    elements.copySummaryBtn.addEventListener('click', copySummaryToClipboard);
+
+    // Populate repository select
+    populateRepoSelect();
+
+    // Update device type options when repository changes
+    elements.repoSelect.addEventListener('change', updateDeviceTypeOptions);
+
+    // Initial population of device type options
+    updateDeviceTypeOptions();
 });
+
 
 // Update button text based on the current theme
 function updateButtonText(theme) {
-    themeToggleButton.textContent = theme === 'dark-mode' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    elements.themeToggleButton.textContent = theme === 'dark-mode' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
 }
 
-// Function to display notifications
 function showNotification(message, type = 'info') {
-    notification.classList.remove('success', 'error', 'info');
-    notification.classList.add(type);
-    notification.textContent = message;
-    notification.classList.add('show');
+    elements.notification.classList.remove('success', 'error', 'info');
+    elements.notification.classList.add(type);
+    elements.notification.textContent = message;
+    elements.notification.classList.add('show');
     setTimeout(() => {
-        notification.classList.remove('show');
+        elements.notification.classList.remove('show');
     }, 5000);
 }
 
-// New function to fetch universal IR file content from GitHub
+function populateRepoSelect() {
+    elements.repoSelect.innerHTML = '';
+    Object.keys(REPOSITORIES).forEach(repoName => {
+        const option = document.createElement('option');
+        option.value = repoName;
+        option.textContent = repoName;
+        elements.repoSelect.appendChild(option);
+    });
+}
+
+async function updateAllowedButtons() {
+    const selectedRepo = elements.repoSelect.value;
+    const repoInfo = REPOSITORIES[selectedRepo];
+    const files = await getIRAssetFiles(repoInfo);
+    
+    const defaultButtons = ['Power', 'Vol_up', 'Vol_down', 'Mute'];
+    
+    files.forEach(file => {
+        const deviceType = file.name.replace('.ir', '').replace(/_/g, ' ');
+        const normalizedDeviceType = deviceType.toLowerCase();
+        
+        if (!allowedButtons[normalizedDeviceType]) {
+            // Check if there's a matching device type with different casing
+            const existingType = Object.keys(allowedButtons).find(
+                key => key.toLowerCase() === normalizedDeviceType
+            );
+            
+            if (existingType) {
+                // Use the existing buttons for this device type
+                allowedButtons[normalizedDeviceType] = [...allowedButtons[existingType]];
+            } else {
+                // Set default buttons for new device types
+                allowedButtons[normalizedDeviceType] = [...defaultButtons];
+            }
+        }
+    });
+    
+    // Special cases for specific device types
+    if (allowedButtons['tv'] && !allowedButtons['tv'].includes('Ch_next')) {
+        allowedButtons['tv'].push('Ch_next', 'Ch_prev');
+    }
+    if (allowedButtons['audio'] && !allowedButtons['audio'].includes('Next')) {
+        allowedButtons['audio'].push('Next', 'Prev', 'Play', 'Pause');
+    }
+    if (allowedButtons['ac'] && !allowedButtons['ac'].includes('Cool_hi')) {
+        allowedButtons['ac'] = ['Off', 'Cool_hi', 'Cool_lo', 'Heat_hi', 'Heat_lo', 'Dh'];
+    }
+    
+    console.log("Updated allowed buttons:", allowedButtons);
+}
+
+
+// Updated updateDeviceTypeOptions function
+async function updateDeviceTypeOptions() {
+    const selectedRepo = elements.repoSelect.value;
+    const repoInfo = REPOSITORIES[selectedRepo];
+    const files = await getIRAssetFiles(repoInfo);
+    
+    elements.deviceTypeSelect.innerHTML = '';
+    files.forEach(file => {
+        const option = document.createElement('option');
+        option.value = file.name;
+        option.textContent = file.name.replace('.ir', '').replace(/_/g, ' ');
+        elements.deviceTypeSelect.appendChild(option);
+    });
+    
+    console.log("Available device types:", files.map(f => f.name));
+    
+    // Update allowed buttons after updating device types
+    await updateAllowedButtons();
+}
+
+
+// GitHub API Functions
 async function fetchUniversalIRFile(deviceTypeFileName) {
-    const url = `${GITHUB_API_BASE}/${IR_ASSETS_PATH}/${deviceTypeFileName}?ref=${BRANCH}`;
+    const selectedRepo = elements.repoSelect.value;
+    const repoInfo = REPOSITORIES[selectedRepo];
+    const url = `https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}/contents/${IR_ASSETS_PATH}/${deviceTypeFileName}?ref=${repoInfo.branch}`;
+    
     try {
         const response = await fetch(url, {
             headers: {
@@ -129,20 +555,47 @@ async function fetchUniversalIRFile(deviceTypeFileName) {
     }
 }
 
+async function getIRAssetFiles(repoInfo) {
+    const url = `https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}/contents/${IR_ASSETS_PATH}?ref=${repoInfo.branch}`;
+    
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'UniversalIRAppender/1.0'
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`GitHub API request failed: ${response.statusText}`);
+        }
+        const files = await response.json();
+        return files.filter(file => file.name.endsWith('.ir'));
+    } catch (error) {
+        console.error('Error fetching IR asset files from GitHub:', error);
+        throw error;
+    }
+}
+
+
 async function processFiles(irFiles) {
     if (irFiles.length === 0) {
         showNotification('No .ir files selected. Please choose a folder containing .ir files.', 'error');
         return;
     }
 
-    const deviceTypeName = deviceTypeSelect.options[deviceTypeSelect.selectedIndex].text;
-    const deviceTypeFileName = deviceTypeSelect.value;
-    const allowedButtonNames = allowedButtons[deviceTypeName];
+    const deviceTypeName = elements.deviceTypeSelect.options[elements.deviceTypeSelect.selectedIndex].text;
+    const deviceTypeFileName = elements.deviceTypeSelect.value;
+    const normalizedDeviceType = deviceTypeName.toLowerCase();
+    
+    console.log("Selected device type:", deviceTypeName);
+    console.log("Selected file name:", deviceTypeFileName);
 
-    processButton.disabled = true;
+    const allowedButtonNames = allowedButtons[normalizedDeviceType] || [];
+    console.log("Allowed buttons:", allowedButtonNames);
+    elements.processButton.disabled = true;
     resetProgress();
-    progressContainer.style.display = 'block';
-    summary.classList.remove('show');
+    elements.progressContainer.style.display = 'block';
+    elements.summary.classList.remove('show');
     const detailedSummaryData = [];
     let totalButtonCounts = {};
 
@@ -151,6 +604,7 @@ async function processFiles(irFiles) {
     let duplicateSignals = 0;
     let errorSignals = 0;
     let totalUnnamedRaw = 0;
+    let totalRenamedButtons = 0;
 
     const processedFiles = new Set();
 
@@ -180,12 +634,12 @@ async function processFiles(irFiles) {
             let fileNewSignals = 0;
             let fileErrorSignals = 0;
             let fileErrorMessages = [];
-            const stats = { duplicateCount: 0, buttonCounts: {}, unnamedRawCount: 0 };
+            const stats = { duplicateCount: 0, buttonCounts: {}, unnamedRawCount: 0, renamedButtonCount: 0 };
 
             try {
                 const content = await readFileContent(file);
                 const deviceInfo = extractDeviceInfo(content, file.name);
-                const filteredContent = filterIRContent(content, allowedButtonNames, existingSignalsIndex, stats);
+                const filteredContent = filterIRContent(content, allowedButtonNames, existingSignalsIndex, stats, normalizedDeviceType);
 
                 if (filteredContent) {
                     const commentLine = `# Model: ${deviceInfo}\n#\n`;
@@ -196,6 +650,7 @@ async function processFiles(irFiles) {
                     newSignals += fileNewSignals;
                     duplicateSignals += stats.duplicateCount;
                     totalUnnamedRaw += stats.unnamedRawCount;
+                    totalRenamedButtons += stats.renamedButtonCount;
 
                     // Aggregate button counts
                     for (const [button, count] of Object.entries(stats.buttonCounts)) {
@@ -218,15 +673,16 @@ async function processFiles(irFiles) {
                 errorSignals: fileErrorSignals,
                 errorMessages: fileErrorMessages,
                 buttonCounts: stats.buttonCounts,
-                unnamedRawCount: stats.unnamedRawCount
+                unnamedRawCount: stats.unnamedRawCount,
+                renamedButtonCount: stats.renamedButtonCount
             });
         }
 
         totalSignals = newSignals + duplicateSignals;
-        totalSignalsElem.textContent = totalSignals;
-        newSignalsElem.textContent = newSignals;
-        duplicateSignalsElem.textContent = duplicateSignals;
-        errorSignalsElem.textContent = errorSignals;
+        elements.totalSignalsElem.textContent = totalSignals;
+        elements.newSignalsElem.textContent = newSignals;
+        elements.duplicateSignalsElem.textContent = duplicateSignals;
+        elements.errorSignalsElem.textContent = errorSignals;
         
         // Update unnamed raw signals count in the summary
         const unnamedRawElem = document.getElementById('unnamed-raw');
@@ -234,57 +690,91 @@ async function processFiles(irFiles) {
             unnamedRawElem.textContent = totalUnnamedRaw;
         }
 
+        // Update renamed buttons count in the summary
+        const renamedButtonsElem = document.getElementById('renamed-buttons');
+        if (renamedButtonsElem) {
+            renamedButtonsElem.textContent = totalRenamedButtons;
+        }
+
         populateDetailedSummary(detailedSummaryData);
-        updateButtonSummary(totalButtonCounts, totalUnnamedRaw);
-        summary.classList.add('show');
-        exportSummaryBtn.disabled = false;
-        copySummaryBtn.disabled = false;
+        updateButtonSummary(totalButtonCounts, totalUnnamedRaw, totalRenamedButtons);
+        elements.summary.classList.add('show');
+        elements.exportSummaryBtn.disabled = false;
+        elements.copySummaryBtn.disabled = false;
 
         showNotification('IR files have been successfully appended to the universal IR file.', 'success');
 
-        const downloadFileName = `universal-ir-${deviceTypeName.replace(/\s+/g, '-').toLowerCase()}.ir`;
+        const selectedRepo = elements.repoSelect.value;
+        const downloadFileName = `${selectedRepo.toLowerCase()}-universal-ir-${deviceTypeName.replace(/\s+/g, '-').toLowerCase()}.ir`;
         downloadFile(universalIRContent, downloadFileName);
     } catch (error) {
         console.error('Error during processing:', error);
         showNotification(error.message, 'error');
     } finally {
-        processButton.disabled = false;
-        progressContainer.style.display = 'none';
+        elements.processButton.disabled = false;
+        elements.progressContainer.style.display = 'none';
     }
 }
 // Helper functions
 
 function resetProgress() {
-    progressBar.style.width = '0%';
-    progressBar.textContent = '0%';
-    totalFilesElem.textContent = 0;
-    totalSignalsElem.textContent = 0;
-    newSignalsElem.textContent = 0;
-    duplicateSignalsElem.textContent = 0;
-    errorSignalsElem.textContent = 0;
-    summary.classList.remove('show');
+    elements.progressBar.style.width = '0%';
+    elements.progressBar.textContent = '0%';
+    elements.totalFilesElem.textContent = '0';
+    elements.totalSignalsElem.textContent = '0';
+    elements.newSignalsElem.textContent = '0';
+    elements.duplicateSignalsElem.textContent = '0';
+    elements.errorSignalsElem.textContent = '0';
+    elements.summary.classList.remove('show');
     const detailedSummaryContainer = document.getElementById('detailed-summary');
     if (detailedSummaryContainer) {
         detailedSummaryContainer.innerHTML = '';
         detailedSummaryContainer.style.display = 'none';
     }
-    exportSummaryBtn.disabled = true;
-    copySummaryBtn.disabled = true;
+    elements.exportSummaryBtn.disabled = true;
+    elements.copySummaryBtn.disabled = true;
 }
 
 function resetSummary() {
-    totalSignalsElem.textContent = 0;
-    newSignalsElem.textContent = 0;
-    duplicateSignalsElem.textContent = 0;
-    errorSignalsElem.textContent = 0;
-    summary.classList.remove('show');
-    exportSummaryBtn.disabled = true;
-    copySummaryBtn.disabled = true;
+    elements.totalSignalsElem.textContent = '0';
+    elements.newSignalsElem.textContent = '0';
+    elements.duplicateSignalsElem.textContent = '0';
+    elements.errorSignalsElem.textContent = '0';
+    elements.summary.classList.remove('show');
+    elements.exportSummaryBtn.disabled = true;
+    elements.copySummaryBtn.disabled = true;
 }
 
 function updateProgress(percent) {
-    progressBar.style.width = `${percent}%`;
-    progressBar.textContent = `${Math.floor(percent)}%`;
+    elements.progressBar.style.width = `${percent}%`;
+    elements.progressBar.textContent = `${Math.floor(percent)}%`;
+}
+
+function updateButtonSummary(buttonCounts, unnamedRawCount, renamedButtonCount) {
+    elements.buttonSummaryElem.innerHTML = '';
+    const sortedButtons = Object.entries(buttonCounts).sort((a, b) => a[0].localeCompare(b[0]));
+    for (const [button, count] of sortedButtons) {
+        const buttonElem = document.createElement('div');
+        buttonElem.textContent = `${button}: ${count}`;
+        elements.buttonSummaryElem.appendChild(buttonElem);
+    }
+    if (unnamedRawCount > 0) {
+        const unnamedRawElem = document.createElement('div');
+        unnamedRawElem.textContent = `Unnamed Raw Signals: ${unnamedRawCount}`;
+        unnamedRawElem.style.color = 'orange';  // Highlight this information
+        elements.buttonSummaryElem.appendChild(unnamedRawElem);
+    }
+    if (renamedButtonCount > 0) {
+        const renamedButtonsElem = document.createElement('div');
+        renamedButtonsElem.textContent = `Renamed Buttons: ${renamedButtonCount}`;
+        renamedButtonsElem.style.color = 'green';  // Highlight this information
+        elements.buttonSummaryElem.appendChild(renamedButtonsElem);
+    }
+    if (sortedButtons.length === 0 && unnamedRawCount === 0 && renamedButtonCount === 0) {
+        const noButtonsElem = document.createElement('p');
+        noButtonsElem.textContent = 'No supported universal buttons were added.';
+        elements.buttonSummaryElem.appendChild(noButtonsElem);
+    }
 }
 
 function readFileContent(file) {
@@ -437,7 +927,8 @@ function parseIRFileSignals(content, allowedButtonNames) {
     return signals;
 }
 
-function filterIRContent(content, allowedButtonNames, existingSignalsIndex, stats) {
+function filterIRContent(content, allowedButtonNames, existingSignalsIndex, stats, deviceType) {
+    console.log("Filtering content with allowed buttons:", allowedButtonNames);
     const allowedButtonNamesLower = new Set(allowedButtonNames.map(name => name.toLowerCase()));
     const lines = content.split('\n');
     let filteredContent = '';
@@ -447,21 +938,26 @@ function filterIRContent(content, allowedButtonNames, existingSignalsIndex, stat
     let isRawSignal = false;
     const buttonCounts = {};
     let rawSignalCounter = 0;
+    let renamedButtonCount = 0;
 
     for (let i = 0; i <= lines.length; i++) {
         let line = (i < lines.length) ? lines[i] : '#';
         if (line.trim().startsWith('#') || line.trim() === '') {
             if (signalLines.length > 0) {
                 if (isRawSignal && !currentSignal.name) {
-                    // Assign a default name for unnamed raw signals
                     currentSignal.name = generateDefaultRawName(++rawSignalCounter);
                     signalLines.unshift(`name: ${currentSignal.name}`);
                 }
                 
                 if (isValidSignal(currentSignal)) {
-                    const normalizedName = normalizeButtonName(currentSignal.name);
+                    const originalName = currentSignal.name;
+                    let normalizedName = normalizeButtonName(originalName);
+                    normalizedName = matchAndRenameButton(normalizedName, deviceType);
+                    if (normalizedName !== originalName) {
+                        renamedButtonCount++;
+                        console.log(`Renamed button: ${originalName} -> ${normalizedName}`);
+                    }
                     if (!isDuplicateSignal(currentSignal, existingSignalsIndex)) {
-                        // Update the name in the signal lines to the normalized version
                         signalLines = signalLines.map(sl => 
                             sl.startsWith('name:') ? `name: ${normalizedName}` : sl
                         );
@@ -484,7 +980,8 @@ function filterIRContent(content, allowedButtonNames, existingSignalsIndex, stat
         } else {
             if (line.trim().startsWith('name:')) {
                 const buttonName = line.split(':')[1].trim();
-                const normalizedName = normalizeButtonName(buttonName);
+                let normalizedName = normalizeButtonName(buttonName);
+                normalizedName = matchAndRenameButton(normalizedName, deviceType);
                 includeSignal = allowedButtonNamesLower.has(normalizedName.toLowerCase());
                 currentSignal.name = normalizedName;
                 signalLines.push(`name: ${normalizedName}`);
@@ -505,6 +1002,7 @@ function filterIRContent(content, allowedButtonNames, existingSignalsIndex, stat
 
     stats.buttonCounts = buttonCounts;
     stats.unnamedRawCount = rawSignalCounter;
+    stats.renamedButtonCount = renamedButtonCount;
     return filteredContent.trim();
 }
 
@@ -590,28 +1088,6 @@ function normalizeButtonName(name) {
 }
 
 
-function updateButtonSummary(buttonCounts, unnamedRawCount) {
-    const buttonSummaryElem = document.getElementById('button-summary');
-    buttonSummaryElem.innerHTML = '';
-    const sortedButtons = Object.entries(buttonCounts).sort((a, b) => a[0].localeCompare(b[0]));
-    for (const [button, count] of sortedButtons) {
-        const buttonElem = document.createElement('div');
-        buttonElem.textContent = `${button}: ${count}`;
-        buttonSummaryElem.appendChild(buttonElem);
-    }
-    if (unnamedRawCount > 0) {
-        const unnamedRawElem = document.createElement('div');
-        unnamedRawElem.textContent = `Unnamed Raw Signals: ${unnamedRawCount}`;
-        unnamedRawElem.style.color = 'orange';  // Highlight this information
-        buttonSummaryElem.appendChild(unnamedRawElem);
-    }
-    if (sortedButtons.length === 0 && unnamedRawCount === 0) {
-        const noButtonsElem = document.createElement('p');
-        noButtonsElem.textContent = 'No supported universal buttons were added.';
-        buttonSummaryElem.appendChild(noButtonsElem);
-    }
-}
-
 function generateDefaultRawName(index) {
     return `Unnamed_Raw_${index}`;
 }
@@ -619,11 +1095,11 @@ function generateDefaultRawName(index) {
 
 function exportSummary() {
     const summaryData = {
-        totalFiles: totalFilesElem.textContent,
-        totalSignals: totalSignalsElem.textContent,
-        newSignals: newSignalsElem.textContent,
-        duplicateSignals: duplicateSignalsElem.textContent,
-        errorSignals: errorSignalsElem.textContent,
+        totalFiles: elements.totalFilesElem.textContent,
+        totalSignals: elements.totalSignalsElem.textContent,
+        newSignals: elements.newSignalsElem.textContent,
+        duplicateSignals: elements.duplicateSignalsElem.textContent,
+        errorSignals: elements.errorSignalsElem.textContent,
         buttonCounts: {},
         detailedSummary: []
     };
@@ -668,14 +1144,13 @@ function exportSummary() {
     document.body.removeChild(csvLink);
 }
 
-// Updated copySummaryToClipboard function
 function copySummaryToClipboard() {
     let summaryText = `Processing Summary:\n`;
-    summaryText += `Total Files Processed: ${totalFilesElem.textContent}\n`;
-    summaryText += `Total Signals: ${totalSignalsElem.textContent}\n`;
-    summaryText += `New Signals: ${newSignalsElem.textContent}\n`;
-    summaryText += `Duplicate Signals: ${duplicateSignalsElem.textContent}\n`;
-    summaryText += `Errors: ${errorSignalsElem.textContent}\n\n`;
+    summaryText += `Total Files Processed: ${elements.totalFilesElem.textContent}\n`;
+    summaryText += `Total Signals: ${elements.totalSignalsElem.textContent}\n`;
+    summaryText += `New Signals: ${elements.newSignalsElem.textContent}\n`;
+    summaryText += `Duplicate Signals: ${elements.duplicateSignalsElem.textContent}\n`;
+    summaryText += `Errors: ${elements.errorSignalsElem.textContent}\n\n`;
     
     summaryText += `Button Summary:\n`;
     const buttonSummaryElems = document.querySelectorAll('#button-summary div');
