@@ -18,11 +18,11 @@ Universal IR Appender is a web-based tool designed to simplify the process of ap
 
 1. Clone the repository:
    ```
-   git clone https://github.com/your-username/universal-ir-appender.git
+   git clone https://github.com/jaylikesbunda/F0-Universal-IR-Appender.git
    ```
 2. Navigate to the project directory:
    ```
-   cd universal-ir-appender
+   cd F0-Universal-IR-Appender
    ```
 3. Open `index.html` in a modern web browser.
 
