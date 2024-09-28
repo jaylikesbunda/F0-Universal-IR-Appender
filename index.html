@@ -588,47 +588,57 @@
             <div class="progress-bar" id="progress-bar">0%</div>
         </div>
 
-        <!-- Summary Section -->
-        <div id="summary" class="summary-container" aria-labelledby="summary-heading" role="region">
-            <h2 id="summary-heading">Processing Summary</h2>
-            <div class="summary-details">
-                <div class="summary-item">
-                    <span class="summary-label">Total Files Processed:</span>
-                    <span id="total-files" class="summary-value">0</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Total Signals:</span>
-                    <span id="total-signals" class="summary-value">0</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">New Signals:</span>
-                    <span id="new-signals" class="summary-value">0</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Duplicate Signals:</span>
-                    <span id="duplicate-signals" class="summary-value">0</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Errors:</span>
-                    <span id="error-signals" class="summary-value">0</span>
-                </div>
+    <!-- Summary Section -->
+    <div id="summary" class="summary-container" aria-labelledby="summary-heading" role="region">
+        <h2 id="summary-heading">Processing Summary</h2>
+        <div class="summary-details">
+            <div class="summary-item">
+                <span class="summary-label">Total Files Processed:</span>
+                <span id="total-files" class="summary-value">0</span>
             </div>
-            
-            <!-- New Button Summary Section -->
-            <h3>Button Summary</h3>
-            <div id="button-summary" class="button-summary">
-                <!-- Button summary will be injected here -->
+            <div class="summary-item">
+                <span class="summary-label">Total Signals:</span>
+                <span id="total-signals" class="summary-value">0</span>
             </div>
-
-            <div class="summary-actions">
-                <button id="export-summary-btn" class="export-button">Export Summary</button>
-                <button id="copy-summary-btn" class="copy-button">Copy Summary</button>
+            <div class="summary-item">
+                <span class="summary-label">New Signals:</span>
+                <span id="new-signals" class="summary-value">0</span>
             </div>
-            <div id="detailed-summary" class="detailed-summary" style="display: none;">
-                <!-- Detailed per-file summary will be injected here -->
+            <div class="summary-item">
+                <span class="summary-label">Duplicate Signals:</span>
+                <span id="duplicate-signals" class="summary-value">0</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Errors:</span>
+                <span id="error-signals" class="summary-value">0</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Unnamed Raw Signals:</span>
+                <span id="unnamed-raw" class="summary-value">0</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Renamed Buttons:</span>
+                <span id="renamed-buttons" class="summary-value">0</span>
             </div>
         </div>
-
+    
+        <!-- Button Summary Section -->
+        <h3>Button Summary</h3>
+        <div id="button-summary" class="button-summary">
+            <!-- Button summary will be injected here -->
+        </div>
+        
+        <div class="summary-actions">
+            <button id="export-summary-btn" class="export-button">Export Summary</button>
+            <button id="copy-summary-btn" class="copy-button">Copy Summary</button>
+        </div>
+        
+        <!-- Detailed Summary Section -->
+        <h3>Detailed Summary</h3>
+        <div id="detailed-summary" class="detailed-summary">
+            <!-- Detailed per-file summary will be injected here -->
+        </div>
+    </div>
         <!-- Notification Area -->
         <div class="notification" id="notification" aria-live="polite" role="alert"></div>
     </div>
