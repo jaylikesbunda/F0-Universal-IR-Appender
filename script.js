@@ -469,42 +469,42 @@ async function updateAllowedButtons() {
     const selectedRepo = elements.repoSelect.value;
     const repoInfo = REPOSITORIES[selectedRepo];
     const files = await getIRAssetFiles(repoInfo);
-    
-    const defaultButtons = ['Power', 'Vol_up', 'Vol_down', 'Mute'];
-    
+
+    const defaultButtons = ['Power', 'Vol_up', 'Vol_dn', 'Mute'];
+
     files.forEach(file => {
         const deviceType = file.name.replace('.ir', '').replace(/_/g, ' ');
-        const normalizedDeviceType = deviceType.toLowerCase();
-        
-        if (!allowedButtons[normalizedDeviceType]) {
+
+        if (!allowedButtons[deviceType]) {
             // Check if there's a matching device type with different casing
             const existingType = Object.keys(allowedButtons).find(
-                key => key.toLowerCase() === normalizedDeviceType
+                key => key.toLowerCase() === deviceType.toLowerCase()
             );
-            
+
             if (existingType) {
                 // Use the existing buttons for this device type
-                allowedButtons[normalizedDeviceType] = [...allowedButtons[existingType]];
+                allowedButtons[deviceType] = [...allowedButtons[existingType]];
             } else {
                 // Set default buttons for new device types
-                allowedButtons[normalizedDeviceType] = [...defaultButtons];
+                allowedButtons[deviceType] = [...defaultButtons];
             }
         }
     });
-    
+
     // Special cases for specific device types
-    if (allowedButtons['tv'] && !allowedButtons['tv'].includes('Ch_next')) {
-        allowedButtons['tv'].push('Ch_next', 'Ch_prev');
+    if (allowedButtons['TV'] && !allowedButtons['TV'].includes('Ch_next')) {
+        allowedButtons['TV'].push('Ch_next', 'Ch_prev');
     }
-    if (allowedButtons['audio'] && !allowedButtons['audio'].includes('Next')) {
-        allowedButtons['audio'].push('Next', 'Prev', 'Play', 'Pause');
+    if (allowedButtons['Audio Player'] && !allowedButtons['Audio Player'].includes('Next')) {
+        allowedButtons['Audio Player'].push('Next', 'Prev', 'Play', 'Pause');
     }
-    if (allowedButtons['ac'] && !allowedButtons['ac'].includes('Cool_hi')) {
-        allowedButtons['ac'] = ['Off', 'Cool_hi', 'Cool_lo', 'Heat_hi', 'Heat_lo', 'Dh'];
+    if (allowedButtons['Air Conditioner'] && !allowedButtons['Air Conditioner'].includes('Cool_hi')) {
+        allowedButtons['Air Conditioner'] = ['Off', 'Cool_hi', 'Cool_lo', 'Heat_hi', 'Heat_lo', 'Dh'];
     }
-    
+
     console.log("Updated allowed buttons:", allowedButtons);
 }
+
 
 
 // Updated updateDeviceTypeOptions function
@@ -585,12 +585,12 @@ async function processFiles(irFiles) {
 
     const deviceTypeName = elements.deviceTypeSelect.options[elements.deviceTypeSelect.selectedIndex].text;
     const deviceTypeFileName = elements.deviceTypeSelect.value;
-    const normalizedDeviceType = deviceTypeName.toLowerCase();
-    
-    console.log("Selected device type:", deviceTypeName);
+    const deviceType = deviceTypeName; // Use the exact device type name
+
+    console.log("Selected device type:", deviceType);
     console.log("Selected file name:", deviceTypeFileName);
 
-    const allowedButtonNames = allowedButtons[normalizedDeviceType] || [];
+    const allowedButtonNames = allowedButtons[deviceType] || [];
     console.log("Allowed buttons:", allowedButtonNames);
     elements.processButton.disabled = true;
     resetProgress();
@@ -639,7 +639,7 @@ async function processFiles(irFiles) {
             try {
                 const content = await readFileContent(file);
                 const deviceInfo = extractDeviceInfo(content, file.name);
-                const filteredContent = filterIRContent(content, allowedButtonNames, existingSignalsIndex, stats, normalizedDeviceType);
+                const filteredContent = filterIRContent(content, allowedButtonNames, existingSignalsIndex, stats, deviceType);
 
                 if (filteredContent) {
                     const commentLine = `# Model: ${deviceInfo}\n#\n`;
@@ -683,7 +683,7 @@ async function processFiles(irFiles) {
         elements.newSignalsElem.textContent = newSignals;
         elements.duplicateSignalsElem.textContent = duplicateSignals;
         elements.errorSignalsElem.textContent = errorSignals;
-        
+
         // Update unnamed raw signals count in the summary
         const unnamedRawElem = document.getElementById('unnamed-raw');
         if (unnamedRawElem) {
@@ -715,6 +715,7 @@ async function processFiles(irFiles) {
         elements.progressContainer.style.display = 'none';
     }
 }
+
 // Helper functions
 
 function resetProgress() {
@@ -825,11 +826,12 @@ function extractDeviceInfo(content, fileName) {
     return infoLine;
 }
 
-// Improved helper function to generate a unique key for a signal
 function generateSignalKey(signal) {
     if (signal.raw) {
-        // For raw signals, use a hash of the raw data as the key
-        return 'raw_' + hashString(signal.raw);
+        // Normalize the raw data by removing extra spaces and line breaks
+        const normalizedRaw = signal.raw.replace(/\s+/g, ' ').trim();
+        // For raw signals, use a hash of the normalized raw data as the key
+        return 'raw_' + hashString(normalizedRaw);
     }
     const normalizedName = (signal.name || '').toLowerCase().trim();
     const normalizedProtocol = (signal.protocol || '').toLowerCase().trim();
@@ -840,7 +842,9 @@ function generateSignalKey(signal) {
 
 // Simple hash function for raw data
 function hashString(str) {
+    // Simple hash function for raw data
     let hash = 0;
+    if (str.length === 0) return hash.toString();
     for (let i = 0; i < str.length; i++) {
         const char = str.charCodeAt(i);
         hash = ((hash << 5) - hash) + char;
@@ -856,7 +860,7 @@ function isDuplicateSignal(signal, existingSignalsIndex) {
     }
     return false;
 }
-// Function to parse universal IR file and index existing signals
+
 function parseUniversalIRFile(content) {
     if (!content) {
         console.warn('Empty content provided to parseUniversalIRFile.');
@@ -873,54 +877,41 @@ function parseUniversalIRFile(content) {
         let line = lines[i].trim();
         let nextLine = (i + 1 < lines.length) ? lines[i + 1].trim() : '#'; // Boundary check
 
-        // Debugging logs
-        console.log(`Processing line ${i}: ${line}`);
-        console.log(`Next line ${i + 1}: ${nextLine}`);
-
         if (line.startsWith('#') || line === '' || i === lines.length - 1) {
+            if (isRawSignal && rawLines.length > 0) {
+                currentSignal.raw = rawLines.join('\n');
+                rawLines = [];
+            }
             if (isValidSignal(currentSignal)) {
                 const key = generateSignalKey(currentSignal);
                 existingSignals.set(key, currentSignal);
-                console.log(`Added signal: ${JSON.stringify(currentSignal)}`);
-            } else {
-                console.log(`Invalid or incomplete signal at line ${i}.`);
             }
             currentSignal = {};
             isRawSignal = false;
-            rawLines = [];
         } else {
             if (line.startsWith('name:')) {
                 currentSignal.name = line.split(':')[1].trim();
-                console.log(`Extracted name: ${currentSignal.name}`);
             } else if (line.startsWith('type: raw')) {
                 isRawSignal = true;
+                rawLines = [];
                 rawLines.push(line);
-                console.log('Detected raw signal type.');
             } else if (isRawSignal) {
                 rawLines.push(line);
-                console.log(`Appending to raw signal: ${line}`);
             } else {
                 if (line.startsWith('protocol:')) {
                     currentSignal.protocol = line.split(':')[1].trim();
-                    console.log(`Extracted protocol: ${currentSignal.protocol}`);
                 } else if (line.startsWith('address:')) {
                     currentSignal.address = line.split(':')[1].trim();
-                    console.log(`Extracted address: ${currentSignal.address}`);
                 } else if (line.startsWith('command:')) {
                     currentSignal.command = line.split(':')[1].trim();
-                    console.log(`Extracted command: ${currentSignal.command}`);
                 }
             }
-        }
-
-        if (isRawSignal && (nextLine.startsWith('#') || nextLine === '')) {
-            currentSignal.raw = rawLines.join('\n');
-            console.log(`Finalized raw signal: ${currentSignal.raw}`);
         }
     }
 
     return existingSignals;
 }
+
 
 // Improved helper function to parse IR file signals
 function parseIRFileSignals(content, allowedButtonNames) {
@@ -963,6 +954,7 @@ function filterIRContent(content, allowedButtonNames, existingSignalsIndex, stat
     let includeSignal = false;
     let currentSignal = {};
     let isRawSignal = false;
+    let rawLines = [];
     const buttonCounts = {};
     let rawSignalCounter = 0;
     let renamedButtonCount = 0;
@@ -970,12 +962,17 @@ function filterIRContent(content, allowedButtonNames, existingSignalsIndex, stat
     for (let i = 0; i <= lines.length; i++) {
         let line = (i < lines.length) ? lines[i] : '#';
         if (line.trim().startsWith('#') || line.trim() === '') {
+            // End of a signal
             if (signalLines.length > 0) {
                 if (isRawSignal && !currentSignal.name) {
                     currentSignal.name = generateDefaultRawName(++rawSignalCounter);
                     signalLines.unshift(`name: ${currentSignal.name}`);
                 }
-                
+
+                if (isRawSignal) {
+                    currentSignal.raw = rawLines.join('\n');
+                }
+
                 if (isValidSignal(currentSignal)) {
                     const originalName = currentSignal.name;
                     let normalizedName = normalizeButtonName(originalName);
@@ -984,45 +981,55 @@ function filterIRContent(content, allowedButtonNames, existingSignalsIndex, stat
                         renamedButtonCount++;
                         console.log(`Renamed button: ${originalName} -> ${normalizedName}`);
                     }
-                    if (!isDuplicateSignal(currentSignal, existingSignalsIndex)) {
+
+                    // Set includeSignal after obtaining the normalized name
+                    includeSignal = allowedButtonNamesLower.has(normalizedName.toLowerCase());
+
+                    if (includeSignal && !isDuplicateSignal(currentSignal, existingSignalsIndex)) {
                         signalLines = signalLines.map(sl => 
                             sl.startsWith('name:') ? `name: ${normalizedName}` : sl
                         );
                         filteredContent += signalLines.join('\n') + '\n#\n';
-                        const key = generateSignalKey({...currentSignal, name: normalizedName});
-                        existingSignalsIndex.set(key, {...currentSignal, name: normalizedName});
-                        if (allowedButtonNamesLower.has(normalizedName.toLowerCase())) {
-                            buttonCounts[normalizedName] = (buttonCounts[normalizedName] || 0) + 1;
-                        }
+                        const key = generateSignalKey({ ...currentSignal, name: normalizedName });
+                        existingSignalsIndex.set(key, { ...currentSignal, name: normalizedName });
+                        buttonCounts[normalizedName] = (buttonCounts[normalizedName] || 0) + 1;
                     } else {
-                        console.log(`Duplicate signal found: ${normalizedName}, skipping.`);
+                        console.log(`Signal ${normalizedName} is not allowed or duplicate, skipping.`);
                         stats.duplicateCount++;
                     }
+                } else {
+                    console.log(`Invalid or incomplete signal: ${currentSignal.name || 'Unnamed'}, skipping.`);
                 }
+                signalLines = [];
+                includeSignal = false;
+                currentSignal = {};
+                isRawSignal = false;
+                rawLines = [];
             }
-            signalLines = [];
-            includeSignal = false;
-            currentSignal = {};
-            isRawSignal = false;
         } else {
             if (line.trim().startsWith('name:')) {
                 const buttonName = line.split(':')[1].trim();
                 let normalizedName = normalizeButtonName(buttonName);
                 normalizedName = matchAndRenameButton(normalizedName, deviceType);
-                includeSignal = allowedButtonNamesLower.has(normalizedName.toLowerCase());
                 currentSignal.name = normalizedName;
                 signalLines.push(`name: ${normalizedName}`);
+
+                // Set includeSignal now that we have the button name
+                includeSignal = allowedButtonNamesLower.has(normalizedName.toLowerCase());
             } else if (line.trim().startsWith('type: raw')) {
                 isRawSignal = true;
-                includeSignal = true;
+                // Do not set includeSignal here
+                rawLines = [];
+                rawLines.push(line);
                 signalLines.push(line);
-            } else if (includeSignal || isRawSignal) {
+            } else if (isRawSignal) {
+                rawLines.push(line);
                 signalLines.push(line);
-                if (!isRawSignal) {
-                    if (line.trim().startsWith('protocol:')) currentSignal.protocol = line.split(':')[1].trim();
-                    else if (line.trim().startsWith('address:')) currentSignal.address = line.split(':')[1].trim();
-                    else if (line.trim().startsWith('command:')) currentSignal.command = line.split(':')[1].trim();
-                }
+            } else {
+                signalLines.push(line);
+                if (line.trim().startsWith('protocol:')) currentSignal.protocol = line.split(':')[1].trim();
+                else if (line.trim().startsWith('address:')) currentSignal.address = line.split(':')[1].trim();
+                else if (line.trim().startsWith('command:')) currentSignal.command = line.split(':')[1].trim();
             }
         }
     }
@@ -1032,6 +1039,7 @@ function filterIRContent(content, allowedButtonNames, existingSignalsIndex, stat
     stats.renamedButtonCount = renamedButtonCount;
     return filteredContent.trim();
 }
+
 
 // Helper function to check if a signal is valid
 function isValidSignal(signal) {

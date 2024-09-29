@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Universal IR Appender v1.2</title>
+    <title>Universal IR Appender</title>
+    <!-- Stylesheet Link -->
     <link rel="stylesheet" href="styles.css">
     <style>
         /* Color variables for flexibility */
@@ -38,17 +39,19 @@
             align-items: center;
         }
 
+        /* Light Mode Styles */
         body.light-mode {
             background: linear-gradient(135deg, var(--light-background), #e6e6e6);
             color: var(--light-text);
         }
 
+        /* Dark Mode Styles */
         body.dark-mode {
             background: linear-gradient(135deg, var(--dark-background), #000000);
-            color: #000;
+            color: #fff;
         }
 
-        /* Container */
+        /* Container Styles */
         .container {
             max-width: 600px;
             width: 90%;
@@ -62,12 +65,14 @@
             overflow: hidden;
         }
 
+        /* Adjustments for Dark Mode */
         body.dark-mode .container {
             background-color: var(--dark-container-bg);
             border-color: var(--dark-border);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
+        /* Decorative Gradient on Hover */
         .container::before {
             content: '';
             position: absolute;
@@ -85,7 +90,7 @@
             transform: rotate(60deg);
         }
 
-        /* Heading */
+        /* Heading Styles */
         h1 {
             text-align: center;
             color: var(--flipper-orange);
@@ -97,6 +102,7 @@
             padding-bottom: 15px;
         }
 
+        /* Underline Decoration for Heading */
         h1::after {
             content: '';
             position: absolute;
@@ -109,7 +115,7 @@
             border-radius: 2px;
         }
 
-        /* Instructions */
+        /* Instructions Section */
         .instructions {
             background-color: #e9ecef;
             padding: 15px;
@@ -118,10 +124,18 @@
             font-size: 14px;
         }
 
+        body.dark-mode .instructions {
+        background-color: #111;
+        /* Other styles if necessary */
+    }
+
+
         .instructions h2 {
             margin-top: 0;
             color: var(--flipper-orange);
         }
+
+        /* Button Summary Grid */
         .button-summary {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -136,7 +150,8 @@
             text-align: center;
             font-size: 14px;
         }
-        /* Inputs, Select, and Textarea */
+
+        /* Input, Select, and Textarea Styles */
         input, select, textarea {
             width: 100%;
             padding: 15px 20px;
@@ -150,6 +165,7 @@
             box-sizing: border-box;
         }
 
+        /* Dark Mode Input Adjustments */
         body.dark-mode input, 
         body.dark-mode select, 
         body.dark-mode textarea {
@@ -158,6 +174,7 @@
             border-color: var(--input-dark-border);
         }
 
+        /* Focus Styles for Inputs */
         input:focus, select:focus, textarea:focus {
             border-color: var(--flipper-orange);
             outline: none;
@@ -165,7 +182,7 @@
             transform: translateY(-2px);
         }
 
-        /* Buttons */
+        /* Button Styles */
         button {
             display: block;
             width: 100%;
@@ -184,6 +201,7 @@
             overflow: hidden;
         }
 
+        /* Button Shine Effect */
         button::before {
             content: '';
             position: absolute;
@@ -204,6 +222,7 @@
             left: 100%;
         }
 
+        /* Button Hover and Active States */
         button:hover {
             background-color: var(--flipper-orange-hover);
             transform: translateY(-3px);
@@ -222,7 +241,7 @@
             background-color: #ddd;
             border-radius: 4px;
             margin: 20px 0;
-            display: none;
+            display: none; /* Initially hidden */
         }
 
         .progress-bar {
@@ -236,7 +255,7 @@
             font-size: 12px;
         }
 
-        /* Summary Styles */
+        /* Summary Section Styles */
         .summary-container {
             border: 1px solid #ccc;
             padding: 20px;
@@ -247,6 +266,7 @@
             display: none;
         }
 
+        /* Show Summary when Data is Available */
         .summary-container.show {
             display: block;
             opacity: 1;
@@ -256,6 +276,7 @@
             margin-bottom: 15px;
         }
 
+        /* Summary Details Flex Layout */
         .summary-details {
             display: flex;
             flex-wrap: wrap;
@@ -272,6 +293,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
+        /* Labels and Values in Summary */
         .summary-label {
             font-weight: bold;
         }
@@ -292,7 +314,7 @@
             color: red;
         }
 
-        /* Detailed Summary */
+        /* Detailed Summary Table */
         .detailed-summary {
             margin-top: 20px;
             max-height: 300px;
@@ -314,7 +336,7 @@
             background-color: #f2f2f2;
         }
 
-        /* Summary Actions */
+        /* Summary Actions Buttons */
         .summary-actions {
             display: flex;
             gap: 10px;
@@ -339,11 +361,13 @@
             font-size: 14px;
         }
 
+        /* Show Notification with Animation */
         .notification.show {
             display: block;
             animation: fadeInOut 5s forwards;
         }
 
+        /* Notification Fade In and Out */
         @keyframes fadeInOut {
             0% { opacity: 0; transform: translateY(-20px); }
             10% { opacity: 1; transform: translateY(0); }
@@ -351,6 +375,7 @@
             100% { opacity: 0; transform: translateY(-20px); }
         }
 
+        /* Notification Types */
         .notification.success {
             background-color: #d4edda;
             color: #155724;
@@ -366,13 +391,13 @@
             color: #0c5460;
         }
 
-        /* Summary Table Error Messages */
+        /* Error Messages in Detailed Summary */
         .detailed-summary .error p {
             color: red;
             margin: 0;
         }
 
-        /* Export and Copy Buttons */
+        /* Export and Copy Buttons Styles */
         .export-button, .copy-button {
             padding: 10px 15px;
             background-color: #007BFF;
@@ -419,7 +444,7 @@
             background-color: var(--flipper-orange-hover);
         }
 
-        /* Custom File Input */
+        /* Custom File Input Styles */
         .file-input-wrapper {
             position: relative;
             overflow: hidden;
@@ -462,7 +487,7 @@
             margin-bottom: 20px;
         }
 
-        /* Responsive Design */
+        /* Responsive Design for Smaller Screens */
         @media (max-width: 768px) {
             .container {
                 width: 100%;
@@ -500,10 +525,7 @@
                 font-size: 14px;
             }
 
-            /* Adjust explanatory text for mobile */
-            .explanatory-text {
-                margin-top: 30px;
-                margin-left: 0;
+            .instructions {
                 font-size: 16px;
                 padding: 0 20px;
             }
@@ -529,58 +551,90 @@
                 font-size: 12px;
             }
 
-            .explanatory-text {
+            .instructions {
                 font-size: 14px;
             }
         }
     </style>
 </head>
 <body class="light-mode">
+    <!-- Main Container -->
     <div class="container">
-        <h1>Universal IR Appender v1.2</h1>
+        <!-- Application Title -->
+        <h1>Universal IR Appender v1.5</h1>
 
-        <!-- Instructions -->
-        <div class="instructions">
-            <h2>How to Use</h2>
-            <ol>
-                <li>Select the folder containing your .ir files.</li>
-                <li>Choose the appropriate device type from the dropdown.</li>
-                <li>Click "Append to Universal IR File" to start processing.</li>
-                <li>After processing, view the summary and export or copy the results as needed.</li>
-            </ol>
-            <p><strong>Note:</strong> Ensure your .ir files are named in the format <em>Brand_Model.ir</em> for optimal device identification.</p>
-            
-            <h2>Device Naming Guidelines</h2>
-            <p>
-                The application attempts to extract the device's <strong>Brand</strong> and <strong>Model</strong> from the file content.
-                If not found, it expects the filename to follow the <em>Brand_Model.ir</em> format.
-                <strong>Fallback:</strong> If both methods fail, the entire filename (without extension) will be used as the device identifier.
-            </p>
-        </div>
+    <!-- Instructions Section -->
+    <div class="instructions">
+        <h2>How to Use</h2>
+        <ol>
+            <li>
+                <strong>Select the folder containing your .ir files.</strong>
+                <p>Click on the "Choose Folder..." button and navigate to the folder where your `.ir` files are stored. The application will automatically detect all `.ir` files within that folder and display the count of files selected.</p>
+            </li>
+            <li>
+                <strong>Choose the appropriate repository and device type from the dropdowns.</strong>
+                <p>Select the repository you wish to use from the "Select the Universal File" dropdown. The device types available will update based on the selected repository. Then, choose the device type that matches your `.ir` files (e.g., TV, Audio Player, Projector, Air Conditioner) from the "Select the Device Type" dropdown.</p>
+            </li>
+            <li>
+                <strong>Click "Append to Universal IR File" to start processing.</strong>
+                <p>When you click this button, the application will:</p>
+                <ul>
+                    <li>Fetch the latest universal IR file for the selected device type from the chosen repository.</li>
+                    <li>Read each of your `.ir` files and extract the infrared signals.</li>
+                    <li>Compare the signals against a list of allowed buttons for the device type to filter out unwanted signals.</li>
+                    <li>Rename buttons as necessary to match standard names.</li>
+                    <li>Avoid adding duplicate signals by checking against existing ones in the universal file.</li>
+                    <li>Append new and valid signals to the universal IR file content.</li>
+                </ul>
+                <p>The progress bar will display the processing status as your files are being processed.</p>
+            </li>
+            <li>
+                <strong>View the summary and export or copy the results as needed.</strong>
+                <p>After processing is complete, a summary will appear showing:</p>
+                <ul>
+                    <li>Total files processed.</li>
+                    <li>Total signals found, new signals added, duplicate signals, and any errors encountered.</li>
+                    <li>Counts of each type of button processed.</li>
+                    <li>Details about unnamed raw signals and renamed buttons.</li>
+                </ul>
+                <p>You can export the summary as JSON or CSV files using the "Export Summary" button or copy it to your clipboard using the "Copy Summary" button.</p>
+            </li>
+        </ol>
 
-        <!-- File selection -->
+        <h2>Device Naming Guidelines</h2>
+        <p>
+            The application attempts to extract the device's <strong>Brand</strong> and <strong>Model</strong> from the content of your `.ir` files. If this information is not found within the file, it will try to infer it from the filename, expecting the format <em>Brand_Model.ir</em> (e.g., <em>Samsung_TV.ir</em>). This helps organize the universal IR file by grouping signals under the correct device identifiers.
+        </p>
+        <p>
+            <strong>Fallback:</strong> If the application cannot extract the Brand and Model from either the file content or filename, it will use the entire filename (without the `.ir` extension) as the device identifier. While this ensures all signals are included, following the naming guidelines is recommended for better organization.
+        </p>
+    </div>
+
+
+        <!-- File Selection Section -->
         <label for="file-input">Select the Folder Containing .ir Files</label>
         <div class="file-input-wrapper">
             <input type="file" id="file-input" webkitdirectory multiple />
             <label for="file-input" class="custom-file-label">Choose Folder...</label>
         </div>
         <p id="file-count">0 .ir files selected</p>
-        <p id="browser-warning" style="display: none; color: red;">Your browser does not support folder selection. Please select multiple .ir files individually.</p>
+        <p id="browser-warning" style="display: none; color: red;">
+            Your browser does not support folder selection. Please select multiple .ir files individually.
+        </p>
 
+        <!-- Repository Selection -->
         <label for="device-type">Select the Universal File</label>
         <select id="repo-select">
-            <!-- Options will be populated dynamically -->
-          </select>
-
-        <!-- Device type -->
-        <label for="device-type">Select the Device Type</label>
-        <select id="device-type">
-            <option value="tv.ir">TV</option>
-            <option value="audio.ir">Audio Player</option>
-            <option value="projector.ir">Projector</option>
-            <option value="ac.ir">Air Conditioner</option>
+            <!-- Options will be populated dynamically via JavaScript -->
         </select>
 
+        <!-- Device Type Selection -->
+        <label for="device-type">Select the Device Type</label>
+        <select id="device-type">
+            <!-- Device types will be populated dynamically -->
+        </select>
+
+        <!-- Process Button -->
         <button id="process-btn">Append to Universal IR File</button>
 
         <!-- Progress Bar -->
@@ -588,57 +642,59 @@
             <div class="progress-bar" id="progress-bar">0%</div>
         </div>
 
-    <!-- Summary Section -->
-    <div id="summary" class="summary-container" aria-labelledby="summary-heading" role="region">
-        <h2 id="summary-heading">Processing Summary</h2>
-        <div class="summary-details">
-            <div class="summary-item">
-                <span class="summary-label">Total Files Processed:</span>
-                <span id="total-files" class="summary-value">0</span>
+        <!-- Summary Section -->
+        <div id="summary" class="summary-container" aria-labelledby="summary-heading" role="region">
+            <h2 id="summary-heading">Processing Summary</h2>
+            <div class="summary-details">
+                <div class="summary-item">
+                    <span class="summary-label">Total Files Processed:</span>
+                    <span id="total-files" class="summary-value">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Total Signals:</span>
+                    <span id="total-signals" class="summary-value">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">New Signals:</span>
+                    <span id="new-signals" class="summary-value">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Duplicate Signals:</span>
+                    <span id="duplicate-signals" class="summary-value">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Errors:</span>
+                    <span id="error-signals" class="summary-value">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Unnamed Raw Signals:</span>
+                    <span id="unnamed-raw" class="summary-value">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Renamed Buttons:</span>
+                    <span id="renamed-buttons" class="summary-value">0</span>
+                </div>
             </div>
-            <div class="summary-item">
-                <span class="summary-label">Total Signals:</span>
-                <span id="total-signals" class="summary-value">0</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">New Signals:</span>
-                <span id="new-signals" class="summary-value">0</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">Duplicate Signals:</span>
-                <span id="duplicate-signals" class="summary-value">0</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">Errors:</span>
-                <span id="error-signals" class="summary-value">0</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">Unnamed Raw Signals:</span>
-                <span id="unnamed-raw" class="summary-value">0</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">Renamed Buttons:</span>
-                <span id="renamed-buttons" class="summary-value">0</span>
-            </div>
-        </div>
-    
-        <!-- Button Summary Section -->
-        <h3>Button Summary</h3>
-        <div id="button-summary" class="button-summary">
-            <!-- Button summary will be injected here -->
-        </div>
         
-        <div class="summary-actions">
-            <button id="export-summary-btn" class="export-button">Export Summary</button>
-            <button id="copy-summary-btn" class="copy-button">Copy Summary</button>
+            <!-- Button Summary Section -->
+            <h3>Button Summary</h3>
+            <div id="button-summary" class="button-summary">
+                <!-- Button summary will be injected here via JavaScript -->
+            </div>
+            
+            <!-- Summary Actions -->
+            <div class="summary-actions">
+                <button id="export-summary-btn" class="export-button">Export Summary</button>
+                <button id="copy-summary-btn" class="copy-button">Copy Summary</button>
+            </div>
+            
+            <!-- Detailed Summary Section -->
+            <h3>Detailed Summary</h3>
+            <div id="detailed-summary" class="detailed-summary">
+                <!-- Detailed per-file summary will be injected here via JavaScript -->
+            </div>
         </div>
-        
-        <!-- Detailed Summary Section -->
-        <h3>Detailed Summary</h3>
-        <div id="detailed-summary" class="detailed-summary">
-            <!-- Detailed per-file summary will be injected here -->
-        </div>
-    </div>
+
         <!-- Notification Area -->
         <div class="notification" id="notification" aria-live="polite" role="alert"></div>
     </div>
@@ -648,6 +704,7 @@
         <button id="theme-toggle-button">Switch to Dark Mode</button>
     </div>
 
+    <!-- Include the JavaScript file -->
     <script src="script.js"></script>
 </body>
 </html>
