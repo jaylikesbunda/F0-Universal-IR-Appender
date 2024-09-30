@@ -1,3 +1,8 @@
+// =========================
+// Constants and Variables
+// =========================
+
+// DOM Elements
 const elements = {
     fileInput: document.getElementById('file-input'),
     repoSelect: document.getElementById('repo-select'), // New element for repository selection
@@ -20,16 +25,18 @@ const elements = {
     browserWarningElem: document.getElementById('browser-warning'),
     buttonSummaryElem: document.getElementById('button-summary')
 };
-// Updated allowedButtons object
+
+// Allowed buttons per device type
 let allowedButtons = {
-    'TV': ['Power', 'Vol_up', 'Vol_dn', 'Ch_next', 'Ch_prev', 'Mute'],
-    'Audio Player': ['Power', 'Vol_up', 'Vol_dn', 'Next', 'Prev', 'Mute', 'Play', 'Pause'],
-    'Projector': ['Power', 'Vol_up', 'Vol_dn', 'Mute'],
-    'Air Conditioner': ['Off', 'Cool_hi', 'Cool_lo', 'Heat_hi', 'Heat_lo', 'Dh']
+    'tv': ['Power', 'Vol_up', 'Vol_dn', 'Ch_next', 'Ch_prev', 'Mute'],
+    'audio': ['Power', 'Vol_up', 'Vol_dn', 'Next', 'Prev', 'Mute', 'Play', 'Pause'],
+    'projector': ['Power', 'Vol_up', 'Vol_dn', 'Mute'],
+    'ac': ['Off', 'Cool_hi', 'Cool_lo', 'Heat_hi', 'Heat_lo', 'Dh']
 };
 
+// Mapping of button names to standard names per device type
 const buttonNameMapping = {
-    "TV": {
+    "tv": {
         // Power
         "power": "Power",
         "pwr": "Power",
@@ -46,7 +53,6 @@ const buttonNameMapping = {
         "powr": "Power",
         "power_on": "Power",
         "power_off": "Power",
-
         // Volume Up
         "vol(?:_)?up": "Vol_up",
         "v(?:_)?up": "Vol_up",
@@ -63,7 +69,6 @@ const buttonNameMapping = {
         "au(?:_)?up": "Vol_up",
         "vol_plus": "Vol_up",
         "volume_plus": "Vol_up",
-
         // Volume Down
         "vol(?:_)?down": "Vol_dn",
         "vol(?:_)?dn": "Vol_dn",
@@ -83,7 +88,6 @@ const buttonNameMapping = {
         "au(?:_)?dn": "Vol_dn",
         "vol_minus": "Vol_dn",
         "volume_minus": "Vol_dn",
-
         // Channel Next
         "ch(?:_)?up": "Ch_next",
         "ch(?:_)?\\+": "Ch_next",
@@ -100,7 +104,6 @@ const buttonNameMapping = {
         "p(?:_)?up": "Ch_next",
         "pu": "Ch_next",
         "channel_plus": "Ch_next",
-
         // Channel Previous
         "ch(?:_)?down": "Ch_prev",
         "ch(?:_)?dn": "Ch_prev",
@@ -120,7 +123,6 @@ const buttonNameMapping = {
         "p(?:_)?dn": "Ch_prev",
         "pd": "Ch_prev",
         "channel_minus": "Ch_prev",
-
         // Mute
         "mute": "Mute",
         "mu": "Mute",
@@ -135,7 +137,7 @@ const buttonNameMapping = {
         "mte": "Mute",
         "mute_toggle": "Mute"
     },
-    "Audio": {
+    "audio": {
         // Power
         "power": "Power",
         "pwr": "Power",
@@ -152,7 +154,6 @@ const buttonNameMapping = {
         "powr": "Power",
         "power_on": "Power",
         "power_off": "Power",
-
         // Volume Up
         "vol(?:_)?up": "Vol_up",
         "v(?:_)?up": "Vol_up",
@@ -169,7 +170,6 @@ const buttonNameMapping = {
         "au(?:_)?up": "Vol_up",
         "vol_plus": "Vol_up",
         "volume_plus": "Vol_up",
-
         // Volume Down
         "vol(?:_)?down": "Vol_dn",
         "vol(?:_)?dn": "Vol_dn",
@@ -189,7 +189,6 @@ const buttonNameMapping = {
         "au(?:_)?dn": "Vol_dn",
         "vol_minus": "Vol_dn",
         "volume_minus": "Vol_dn",
-
         // Next
         "next": "Next",
         "nxt": "Next",
@@ -206,7 +205,6 @@ const buttonNameMapping = {
         "next(?:_)?track": "Next",
         "skip(?:_)?ahead": "Next",
         "track_next": "Next",
-
         // Previous
         "prev(?:ious)?": "Prev",
         "prv": "Prev",
@@ -223,7 +221,6 @@ const buttonNameMapping = {
         "previous(?:_)?track": "Prev",
         "skip(?:_)?previous": "Prev",
         "track_prev": "Prev",
-
         // Play
         "play": "Play",
         "pl": "Play",
@@ -236,7 +233,6 @@ const buttonNameMapping = {
         "bgn": "Play",
         "playback": "Play",
         "pb": "Play",
-
         // Pause
         "pause": "Pause",
         "pse": "Pause",
@@ -251,7 +247,6 @@ const buttonNameMapping = {
         "spnd": "Pause",
         "break": "Pause",
         "brk": "Pause",
-
         // Mute
         "mute": "Mute",
         "mu": "Mute",
@@ -266,7 +261,7 @@ const buttonNameMapping = {
         "mte": "Mute",
         "mute_toggle": "Mute"
     },
-    "AC": {
+    "ac": {
         // Off
         "off": "Off",
         "of": "Off",
@@ -281,7 +276,20 @@ const buttonNameMapping = {
         "turn(?:_)?off": "Off",
         "switch(?:_)?off": "Off",
         "sw(?:_)?off": "Off",
-
+        "poweroff": "Off",
+        "turn_off": "Off",
+        "turnoff": "Off",
+        "shutdown": "Off",
+        "shut_down": "Off",
+        "off_button": "Off",
+        "kill": "Off",
+        "disable": "Off",
+        "pwr": "Off",
+        "powr": "Off",
+        "pw": "Off",
+        "po": "Off",
+        "pwr_off": "Off",
+        "powr_off": "Off",
         // Dehumidify
         "dh": "Dh",
         "dehumidify": "Dh",
@@ -295,7 +303,6 @@ const buttonNameMapping = {
         "hum(?:_)?ctrl": "Dh",
         "water(?:_)?remove": "Dh",
         "wtr(?:_)?rmv": "Dh",
-
         // Cool High
         "cool(?:_)?hi": "Cool_hi",
         "ch": "Cool_hi",
@@ -306,7 +313,6 @@ const buttonNameMapping = {
         "cool(?:_)?max": "Cool_hi",
         "strong(?:_)?cool": "Cool_hi",
         "str(?:_)?cool": "Cool_hi",
-
         // Cool Low
         "cool(?:_)?lo": "Cool_lo",
         "cl": "Cool_lo",
@@ -316,7 +322,6 @@ const buttonNameMapping = {
         "cool(?:_)?min": "Cool_lo",
         "gentle(?:_)?cool": "Cool_lo",
         "gnt(?:_)?cool": "Cool_lo",
-
         // Heat High
         "heat(?:_)?hi": "Heat_hi",
         "hh": "Heat_hi",
@@ -327,7 +332,6 @@ const buttonNameMapping = {
         "heat(?:_)?max": "Heat_hi",
         "strong(?:_)?heat": "Heat_hi",
         "str(?:_)?heat": "Heat_hi",
-
         // Heat Low
         "heat(?:_)?lo": "Heat_lo",
         "hl": "Heat_lo",
@@ -340,21 +344,7 @@ const buttonNameMapping = {
     }
 };
 
-function matchAndRenameButton(buttonName, deviceType) {
-    const normalizedButton = normalizeButtonName(buttonName);
-    const mappings = buttonNameMapping[deviceType] || {};
-    
-    for (const [pattern, standardName] of Object.entries(mappings)) {
-        const regex = new RegExp(`^${pattern}$`, 'i');
-        if (regex.test(normalizedButton)) {
-            return standardName;
-        }
-    }
-    
-    // If no match found, return the normalized button name
-    return normalizedButton;
-}
-
+// Repositories information
 const REPOSITORIES = {
     'Next-Flip': {
         owner: 'Next-Flip',
@@ -378,162 +368,220 @@ const GITHUB_API_BASE = 'https://api.github.com/repos/flipperdevices/flipperzero
 const IR_ASSETS_PATH = 'applications/main/infrared/resources/infrared/assets';
 const BRANCH = 'dev';
 
-// Event Listeners
-document.addEventListener('DOMContentLoaded', () => {
-    // Theme toggle
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-        elements.body.classList.remove('light-mode', 'dark-mode');
-        elements.body.classList.add(savedTheme);
-        updateButtonText(savedTheme);
+// =========================
+// Utility Functions
+// =========================
+
+// Normalize button name by capitalizing first letters
+function normalizeButtonName(name) {
+    return name.toLowerCase().replace(/(^|\s)\S/g, l => l.toUpperCase());
+}
+
+function matchAndRenameButton(buttonName, deviceType) {
+    const normalizedButton = normalizeButtonName(buttonName);
+    const mappings = buttonNameMapping[deviceType.toLowerCase()] || {};
+
+    for (const [pattern, standardName] of Object.entries(mappings)) {
+        const regex = new RegExp(`^${pattern}$`, 'i');
+        if (regex.test(normalizedButton)) {
+            return standardName;
+        }
     }
 
-    elements.themeToggleButton.addEventListener('click', () => {
-        const currentTheme = elements.body.classList.contains('light-mode') ? 'light-mode' : 'dark-mode';
-        const newTheme = currentTheme === 'light-mode' ? 'dark-mode' : 'light-mode';
-        elements.body.classList.remove(currentTheme);
-        elements.body.classList.add(newTheme);
-        localStorage.setItem('theme', newTheme);
-        updateButtonText(newTheme);
-    });
+    // If no match found, return the normalized button name
+    return normalizedButton;
+}
 
-    // Check for 'webkitdirectory' support
-    const supportsWebkitDirectory = 'webkitdirectory' in document.createElement('input');
-    if (!supportsWebkitDirectory) {
-        elements.browserWarningElem.style.display = 'block';
+// Generate a unique key for a signal with improved normalization
+function generateSignalKey(signal) {
+    if (signal.raw) {
+        // Normalize raw signal
+        const normalizedRaw = signal.raw
+            .replace(/[\s,]+/g, ' ') // Replace multiple spaces or commas with a single space
+            .trim();
+        return 'raw_' + hashString(normalizedRaw);
     }
 
-    // Update file input label and display file count
-    elements.fileInput.addEventListener('change', (event) => {
-        const files = event.target.files;
-        const irFiles = Array.from(files).filter(file => file.name.toLowerCase().endsWith('.ir'));
-        const fileCount = irFiles.length;
-        elements.fileCountElem.textContent = `${fileCount} .ir file${fileCount !== 1 ? 's' : ''} selected`;
-        elements.totalFilesElem.textContent = fileCount;
-        resetSummary();
-    });
+    // Normalize and standardize other attributes
+    const normalizedName = (signal.name || '').toLowerCase().trim();
+    const normalizedProtocol = (signal.protocol || '').toLowerCase().trim();
+    const normalizedAddress = normalizeHex(signal.address || '');
+    const normalizedCommand = normalizeHex(signal.command || '');
 
-    // Process files
-    elements.processButton.addEventListener('click', () => {
-        const files = Array.from(elements.fileInput.files).filter(file => file.name.toLowerCase().endsWith('.ir'));
-        processFiles(files);
-    });
-
-    elements.repoSelect.addEventListener('change', async () => {
-        await updateDeviceTypeOptions();
-    });
-    
-    // Export summary
-    elements.exportSummaryBtn.addEventListener('click', exportSummary);
-
-    // Copy summary
-    elements.copySummaryBtn.addEventListener('click', copySummaryToClipboard);
-
-    // Populate repository select
-    populateRepoSelect();
-
-    // Update device type options when repository changes
-    elements.repoSelect.addEventListener('change', updateDeviceTypeOptions);
-
-    // Initial population of device type options
-    updateDeviceTypeOptions();
-});
-
-
-// Update button text based on the current theme
-function updateButtonText(theme) {
-    elements.themeToggleButton.textContent = theme === 'dark-mode' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    return `${normalizedName}|${normalizedProtocol}|${normalizedAddress}|${normalizedCommand}`;
 }
 
-function showNotification(message, type = 'info') {
-    elements.notification.classList.remove('success', 'error', 'info');
-    elements.notification.classList.add(type);
-    elements.notification.textContent = message;
-    elements.notification.classList.add('show');
-    setTimeout(() => {
-        elements.notification.classList.remove('show');
-    }, 5000);
+// Helper function to normalize hexadecimal values
+function normalizeHex(value) {
+    // Remove '0x' prefix if present and convert to lowercase
+    let hex = value.toLowerCase().replace(/^0x/, '');
+    // Pad with leading zeros to a fixed length (e.g., 4 characters)
+    hex = hex.padStart(4, '0');
+    return hex;
 }
 
-function populateRepoSelect() {
-    elements.repoSelect.innerHTML = '';
-    Object.keys(REPOSITORIES).forEach(repoName => {
-        const option = document.createElement('option');
-        option.value = repoName;
-        option.textContent = repoName;
-        elements.repoSelect.appendChild(option);
-    });
+// Simple hash function for strings
+function hashString(str) {
+    let hash = 0;
+    if (str.length === 0) return hash.toString();
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    return hash.toString(36);
 }
 
-async function updateAllowedButtons() {
-    const selectedRepo = elements.repoSelect.value;
-    const repoInfo = REPOSITORIES[selectedRepo];
-    const files = await getIRAssetFiles(repoInfo);
+// Check if a signal is a duplicate with enhanced criteria
+function isDuplicateSignal(signal, existingSignalsIndex) {
+    if (signal.raw || (signal.name && signal.protocol && signal.address && signal.command)) {
+        const key = generateSignalKey(signal);
+        return existingSignalsIndex.has(key);
+    }
+    return false;
+}
 
-    const defaultButtons = ['Power', 'Vol_up', 'Vol_dn', 'Mute'];
+// Parse the universal IR file and index existing signals with better normalization
+function parseUniversalIRFile(content) {
+    if (!content) {
+        console.warn('Empty content provided to parseUniversalIRFile.');
+        return new Map();
+    }
 
-    files.forEach(file => {
-        const deviceType = file.name.replace('.ir', '').replace(/_/g, ' ');
+    const lines = content.split('\n');
+    const existingSignals = new Map();
+    let currentSignal = {};
+    let isRawSignal = false;
+    let rawLines = [];
 
-        if (!allowedButtons[deviceType]) {
-            // Check if there's a matching device type with different casing
-            const existingType = Object.keys(allowedButtons).find(
-                key => key.toLowerCase() === deviceType.toLowerCase()
-            );
+    for (let i = 0; i <= lines.length; i++) {
+        let line = (i < lines.length) ? lines[i].trim() : '#';
 
-            if (existingType) {
-                // Use the existing buttons for this device type
-                allowedButtons[deviceType] = [...allowedButtons[existingType]];
+        if (line.startsWith('#') || line === '' || i === lines.length) {
+            // End of a signal
+            if (isRawSignal && rawLines.length > 0) {
+                currentSignal.raw = rawLines.join('\n');
+                rawLines = [];
+            }
+            if (isValidSignal(currentSignal)) {
+                const key = generateSignalKey(currentSignal);
+                existingSignals.set(key, currentSignal);
+            }
+            currentSignal = {};
+            isRawSignal = false;
+        } else {
+            if (line.startsWith('name:')) {
+                currentSignal.name = line.split(':')[1].trim();
+            } else if (line.startsWith('type: raw')) {
+                isRawSignal = true;
+                rawLines = [];
+                rawLines.push(line);
+            } else if (isRawSignal) {
+                rawLines.push(line);
             } else {
-                // Set default buttons for new device types
-                allowedButtons[deviceType] = [...defaultButtons];
+                // Normalize and extract attributes
+                if (line.startsWith('protocol:')) {
+                    currentSignal.protocol = line.split(':')[1].trim();
+                } else if (line.startsWith('address:')) {
+                    currentSignal.address = line.split(':')[1].trim();
+                } else if (line.startsWith('command:')) {
+                    currentSignal.command = line.split(':')[1].trim();
+                } else if (line.startsWith('frequency:')) {
+                    currentSignal.frequency = line.split(':')[1].trim();
+                }
             }
         }
-    });
-
-    // Special cases for specific device types
-    if (allowedButtons['TV'] && !allowedButtons['TV'].includes('Ch_next')) {
-        allowedButtons['TV'].push('Ch_next', 'Ch_prev');
-    }
-    if (allowedButtons['Audio Player'] && !allowedButtons['Audio Player'].includes('Next')) {
-        allowedButtons['Audio Player'].push('Next', 'Prev', 'Play', 'Pause');
-    }
-    if (allowedButtons['Air Conditioner'] && !allowedButtons['Air Conditioner'].includes('Cool_hi')) {
-        allowedButtons['Air Conditioner'] = ['Off', 'Cool_hi', 'Cool_lo', 'Heat_hi', 'Heat_lo', 'Dh'];
     }
 
-    console.log("Updated allowed buttons:", allowedButtons);
+    return existingSignals;
 }
 
 
-
-// Updated updateDeviceTypeOptions function
-async function updateDeviceTypeOptions() {
-    const selectedRepo = elements.repoSelect.value;
-    const repoInfo = REPOSITORIES[selectedRepo];
-    const files = await getIRAssetFiles(repoInfo);
-    
-    elements.deviceTypeSelect.innerHTML = '';
-    files.forEach(file => {
-        const option = document.createElement('option');
-        option.value = file.name;
-        option.textContent = file.name.replace('.ir', '').replace(/_/g, ' ');
-        elements.deviceTypeSelect.appendChild(option);
+// Read file content as text
+function readFileContent(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = event => resolve(event.target.result);
+        reader.onerror = error => reject(error);
+        reader.readAsText(file);
     });
-    
-    console.log("Available device types:", files.map(f => f.name));
-    
-    // Update allowed buttons after updating device types
-    await updateAllowedButtons();
+}
+
+// Extract device info from file content or name
+function extractDeviceInfo(content, fileName) {
+    const lines = content.split('\n');
+    let brand = '';
+    let model = '';
+
+    for (let line of lines) {
+        line = line.trim();
+        if (line.startsWith('#')) {
+            if (line.includes('Brand:')) {
+                const brandMatch = line.match(/Brand:\s*([^,]+)/);
+                if (brandMatch) brand = brandMatch[1].trim();
+            }
+            if (line.includes('Device Model:')) {
+                const modelMatch = line.match(/Device Model:\s*([^,]+)/);
+                if (modelMatch) model = modelMatch[1].trim();
+            }
+            if (brand && model) break;
+        }
+    }
+
+    let infoLine = `${brand} ${model}`.trim();
+
+    if (!infoLine) {
+        const fileNameMatch = fileName.match(/^([^_]+)_([^\.]+)\.ir$/i);
+        if (fileNameMatch) {
+            brand = fileNameMatch[1].trim();
+            model = fileNameMatch[2].trim();
+            infoLine = `${brand} ${model}`;
+            console.info(`Brand and Model not found in content for file "${fileName}". Inferred from file name: ${infoLine}`);
+        } else {
+            infoLine = fileName.replace(/\.ir$/i, '');
+            console.warn(`Unable to extract Brand and Model from content or file name for file: ${fileName}. Using filename as device identifier.`);
+            showNotification(`Device info for "${fileName}" was inferred from the filename. Consider naming files as "Brand_Model.ir" for better organization.`, 'info');
+        }
+    }
+
+    return infoLine;
+}
+
+// Check if a signal is valid with stricter criteria
+function isValidSignal(signal) {
+    if (signal.raw) {
+        // Ensure raw signal has sufficient data
+        return signal.raw.trim().split('\n').length > 1;
+    }
+    // For learned signals, ensure all critical attributes are present
+    return (
+        signal.name &&
+        signal.protocol &&
+        signal.address &&
+        signal.command &&
+        signal.name.trim() !== '' &&
+        signal.protocol.trim() !== '' &&
+        signal.address.trim() !== '' &&
+        signal.command.trim() !== ''
+    );
 }
 
 
+// Generate default name for unnamed raw signals
+function generateDefaultRawName(index) {
+    return `Unnamed_Raw_${index}`;
+}
+
+// =========================
 // GitHub API Functions
+// =========================
+
+// Fetch the universal IR file from GitHub
 async function fetchUniversalIRFile(deviceTypeFileName) {
     const selectedRepo = elements.repoSelect.value;
     const repoInfo = REPOSITORIES[selectedRepo];
     const url = `https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}/contents/${IR_ASSETS_PATH}/${deviceTypeFileName}?ref=${repoInfo.branch}`;
-    
+
     try {
         const response = await fetch(url, {
             headers: {
@@ -555,9 +603,10 @@ async function fetchUniversalIRFile(deviceTypeFileName) {
     }
 }
 
+// Get list of IR asset files from GitHub
 async function getIRAssetFiles(repoInfo) {
     const url = `https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}/contents/${IR_ASSETS_PATH}?ref=${repoInfo.branch}`;
-    
+
     try {
         const response = await fetch(url, {
             headers: {
@@ -576,7 +625,11 @@ async function getIRAssetFiles(repoInfo) {
     }
 }
 
+// =========================
+// Main Functions
+// =========================
 
+// Process selected IR files
 async function processFiles(irFiles) {
     if (irFiles.length === 0) {
         showNotification('No .ir files selected. Please choose a folder containing .ir files.', 'error');
@@ -585,7 +638,7 @@ async function processFiles(irFiles) {
 
     const deviceTypeName = elements.deviceTypeSelect.options[elements.deviceTypeSelect.selectedIndex].text;
     const deviceTypeFileName = elements.deviceTypeSelect.value;
-    const deviceType = deviceTypeName; // Use the exact device type name
+    const deviceType = deviceTypeName.toLowerCase(); // Ensure lowercase
 
     console.log("Selected device type:", deviceType);
     console.log("Selected file name:", deviceTypeFileName);
@@ -716,235 +769,7 @@ async function processFiles(irFiles) {
     }
 }
 
-// Helper functions
-
-function resetProgress() {
-    elements.progressBar.style.width = '0%';
-    elements.progressBar.textContent = '0%';
-    elements.totalFilesElem.textContent = '0';
-    elements.totalSignalsElem.textContent = '0';
-    elements.newSignalsElem.textContent = '0';
-    elements.duplicateSignalsElem.textContent = '0';
-    elements.errorSignalsElem.textContent = '0';
-    elements.summary.classList.remove('show');
-    const detailedSummaryContainer = document.getElementById('detailed-summary');
-    if (detailedSummaryContainer) {
-        detailedSummaryContainer.innerHTML = '';
-        detailedSummaryContainer.style.display = 'none';
-    }
-    elements.exportSummaryBtn.disabled = true;
-    elements.copySummaryBtn.disabled = true;
-}
-
-function resetSummary() {
-    elements.totalSignalsElem.textContent = '0';
-    elements.newSignalsElem.textContent = '0';
-    elements.duplicateSignalsElem.textContent = '0';
-    elements.errorSignalsElem.textContent = '0';
-    elements.summary.classList.remove('show');
-    elements.exportSummaryBtn.disabled = true;
-    elements.copySummaryBtn.disabled = true;
-}
-
-function updateProgress(percent) {
-    elements.progressBar.style.width = `${percent}%`;
-    elements.progressBar.textContent = `${Math.floor(percent)}%`;
-}
-
-function updateButtonSummary(buttonCounts, unnamedRawCount, renamedButtonCount) {
-    elements.buttonSummaryElem.innerHTML = '';
-    const sortedButtons = Object.entries(buttonCounts).sort((a, b) => a[0].localeCompare(b[0]));
-    for (const [button, count] of sortedButtons) {
-        const buttonElem = document.createElement('div');
-        buttonElem.textContent = `${button}: ${count}`;
-        elements.buttonSummaryElem.appendChild(buttonElem);
-    }
-    if (unnamedRawCount > 0) {
-        const unnamedRawElem = document.createElement('div');
-        unnamedRawElem.textContent = `Unnamed Raw Signals: ${unnamedRawCount}`;
-        unnamedRawElem.style.color = 'orange';  // Highlight this information
-        elements.buttonSummaryElem.appendChild(unnamedRawElem);
-    }
-    if (renamedButtonCount > 0) {
-        const renamedButtonsElem = document.createElement('div');
-        renamedButtonsElem.textContent = `Renamed Buttons: ${renamedButtonCount}`;
-        renamedButtonsElem.style.color = 'green';  // Highlight this information
-        elements.buttonSummaryElem.appendChild(renamedButtonsElem);
-    }
-    if (sortedButtons.length === 0 && unnamedRawCount === 0 && renamedButtonCount === 0) {
-        const noButtonsElem = document.createElement('p');
-        noButtonsElem.textContent = 'No supported universal buttons were added.';
-        elements.buttonSummaryElem.appendChild(noButtonsElem);
-    }
-}
-
-function readFileContent(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = event => resolve(event.target.result);
-        reader.onerror = error => reject(error);
-        reader.readAsText(file);
-    });
-}
-
-function extractDeviceInfo(content, fileName) {
-    const lines = content.split('\n');
-    let brand = '';
-    let model = '';
-
-    for (let line of lines) {
-        line = line.trim();
-        if (line.startsWith('#')) {
-            if (line.includes('Brand:')) {
-                const brandMatch = line.match(/Brand:\s*([^,]+)/);
-                if (brandMatch) brand = brandMatch[1].trim();
-            }
-            if (line.includes('Device Model:')) {
-                const modelMatch = line.match(/Device Model:\s*([^,]+)/);
-                if (modelMatch) model = modelMatch[1].trim();
-            }
-            if (brand && model) break;
-        }
-    }
-
-    let infoLine = `${brand} ${model}`.trim();
-
-    if (!infoLine) {
-        const fileNameMatch = fileName.match(/^([^_]+)_([^\.]+)\.ir$/i);
-        if (fileNameMatch) {
-            brand = fileNameMatch[1].trim();
-            model = fileNameMatch[2].trim();
-            infoLine = `${brand} ${model}`;
-            console.info(`Brand and Model not found in content for file "${fileName}". Inferred from file name: ${infoLine}`);
-        } else {
-            infoLine = fileName.replace(/\.ir$/i, '');
-            console.warn(`Unable to extract Brand and Model from content or file name for file: ${fileName}. Using filename as device identifier.`);
-            showNotification(`Device info for "${fileName}" was inferred from the filename. Consider naming files as "Brand_Model.ir" for better organization.`, 'info');
-        }
-    }
-
-    return infoLine;
-}
-
-function generateSignalKey(signal) {
-    if (signal.raw) {
-        // Normalize the raw data by removing extra spaces and line breaks
-        const normalizedRaw = signal.raw.replace(/\s+/g, ' ').trim();
-        // For raw signals, use a hash of the normalized raw data as the key
-        return 'raw_' + hashString(normalizedRaw);
-    }
-    const normalizedName = (signal.name || '').toLowerCase().trim();
-    const normalizedProtocol = (signal.protocol || '').toLowerCase().trim();
-    const normalizedAddress = (signal.address || '').toLowerCase().trim();
-    const normalizedCommand = (signal.command || '').toLowerCase().trim();
-    return `${normalizedName}|${normalizedProtocol}|${normalizedAddress}|${normalizedCommand}`;
-}
-
-// Simple hash function for raw data
-function hashString(str) {
-    // Simple hash function for raw data
-    let hash = 0;
-    if (str.length === 0) return hash.toString();
-    for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32-bit integer
-    }
-    return hash.toString(36); // Convert to base 36 for shorter string
-}
-
-function isDuplicateSignal(signal, existingSignalsIndex) {
-    if (signal.raw || (signal.name && signal.protocol && signal.address && signal.command)) {
-        const key = generateSignalKey(signal);
-        return existingSignalsIndex.has(key);
-    }
-    return false;
-}
-
-function parseUniversalIRFile(content) {
-    if (!content) {
-        console.warn('Empty content provided to parseUniversalIRFile.');
-        return new Map();
-    }
-
-    const lines = content.split('\n');
-    const existingSignals = new Map();
-    let currentSignal = {};
-    let isRawSignal = false;
-    let rawLines = [];
-
-    for (let i = 0; i < lines.length; i++) {
-        let line = lines[i].trim();
-        let nextLine = (i + 1 < lines.length) ? lines[i + 1].trim() : '#'; // Boundary check
-
-        if (line.startsWith('#') || line === '' || i === lines.length - 1) {
-            if (isRawSignal && rawLines.length > 0) {
-                currentSignal.raw = rawLines.join('\n');
-                rawLines = [];
-            }
-            if (isValidSignal(currentSignal)) {
-                const key = generateSignalKey(currentSignal);
-                existingSignals.set(key, currentSignal);
-            }
-            currentSignal = {};
-            isRawSignal = false;
-        } else {
-            if (line.startsWith('name:')) {
-                currentSignal.name = line.split(':')[1].trim();
-            } else if (line.startsWith('type: raw')) {
-                isRawSignal = true;
-                rawLines = [];
-                rawLines.push(line);
-            } else if (isRawSignal) {
-                rawLines.push(line);
-            } else {
-                if (line.startsWith('protocol:')) {
-                    currentSignal.protocol = line.split(':')[1].trim();
-                } else if (line.startsWith('address:')) {
-                    currentSignal.address = line.split(':')[1].trim();
-                } else if (line.startsWith('command:')) {
-                    currentSignal.command = line.split(':')[1].trim();
-                }
-            }
-        }
-    }
-
-    return existingSignals;
-}
-
-
-// Improved helper function to parse IR file signals
-function parseIRFileSignals(content, allowedButtonNames) {
-    const allowedButtonNamesLower = new Set(allowedButtonNames.map(name => name.toLowerCase()));
-    const lines = content.split('\n');
-    let signals = [];
-    let includeSignal = false;
-    let currentSignal = {};
-
-    for (let i = 0; i <= lines.length; i++) {
-        let line = (i < lines.length) ? lines[i].trim() : '#';
-        if (line.startsWith('#') || line === '') {
-            if (includeSignal && currentSignal.name) {
-                signals.push({ ...currentSignal });
-            }
-            includeSignal = false;
-            currentSignal = {};
-        } else {
-            if (line.startsWith('name:')) {
-                const buttonName = line.split(':')[1].trim();
-                includeSignal = allowedButtonNamesLower.has(buttonName.toLowerCase());
-                currentSignal.name = buttonName;
-            } else if (includeSignal) {
-                if (line.startsWith('protocol:')) currentSignal.protocol = line.split(':')[1].trim();
-                else if (line.startsWith('address:')) currentSignal.address = line.split(':')[1].trim();
-                else if (line.startsWith('command:')) currentSignal.command = line.split(':')[1].trim();
-            }
-        }
-    }
-
-    return signals;
-}
-
+// Filter IR content based on allowed buttons and existing signals
 function filterIRContent(content, allowedButtonNames, existingSignalsIndex, stats, deviceType) {
     console.log("Filtering content with allowed buttons:", allowedButtonNames);
     const allowedButtonNamesLower = new Set(allowedButtonNames.map(name => name.toLowerCase()));
@@ -986,7 +811,7 @@ function filterIRContent(content, allowedButtonNames, existingSignalsIndex, stat
                     includeSignal = allowedButtonNamesLower.has(normalizedName.toLowerCase());
 
                     if (includeSignal && !isDuplicateSignal(currentSignal, existingSignalsIndex)) {
-                        signalLines = signalLines.map(sl => 
+                        signalLines = signalLines.map(sl =>
                             sl.startsWith('name:') ? `name: ${normalizedName}` : sl
                         );
                         filteredContent += signalLines.join('\n') + '\n#\n';
@@ -1040,13 +865,252 @@ function filterIRContent(content, allowedButtonNames, existingSignalsIndex, stat
     return filteredContent.trim();
 }
 
+// Parse IR file signals
+function parseIRFileSignals(content, allowedButtonNames) {
+    const allowedButtonNamesLower = new Set(allowedButtonNames.map(name => name.toLowerCase()));
+    const lines = content.split('\n');
+    let signals = [];
+    let includeSignal = false;
+    let currentSignal = {};
 
-// Helper function to check if a signal is valid
-function isValidSignal(signal) {
-    return signal.raw || (signal.name && signal.protocol && signal.address && signal.command);
+    for (let i = 0; i <= lines.length; i++) {
+        let line = (i < lines.length) ? lines[i].trim() : '#';
+        if (line.startsWith('#') || line === '') {
+            if (includeSignal && currentSignal.name) {
+                signals.push({ ...currentSignal });
+            }
+            includeSignal = false;
+            currentSignal = {};
+        } else {
+            if (line.startsWith('name:')) {
+                const buttonName = line.split(':')[1].trim();
+                includeSignal = allowedButtonNamesLower.has(buttonName.toLowerCase());
+                currentSignal.name = buttonName;
+            } else if (includeSignal) {
+                if (line.startsWith('protocol:')) currentSignal.protocol = line.split(':')[1].trim();
+                else if (line.startsWith('address:')) currentSignal.address = line.split(':')[1].trim();
+                else if (line.startsWith('command:')) currentSignal.command = line.split(':')[1].trim();
+            }
+        }
+    }
+
+    return signals;
 }
 
-// Helper function to populate detailed summary
+async function updateAllowedButtons() {
+    const selectedRepo = elements.repoSelect.value;
+    const repoInfo = REPOSITORIES[selectedRepo];
+    const files = await getIRAssetFiles(repoInfo);
+
+    const defaultButtons = ['Power', 'Vol_up', 'Vol_dn', 'Mute'];
+
+    files.forEach(file => {
+        const deviceType = file.name.replace('.ir', '').replace(/_/g, ' ').toLowerCase();
+
+        if (!allowedButtons[deviceType]) {
+            const existingType = Object.keys(allowedButtons).find(
+                key => key.toLowerCase() === deviceType.toLowerCase()
+            );
+
+            if (existingType) {
+                allowedButtons[deviceType] = [...allowedButtons[existingType]];
+            } else {
+                allowedButtons[deviceType] = [...defaultButtons];
+            }
+        }
+    });
+
+    // Special cases with lowercase keys
+    if (allowedButtons['tv'] && !allowedButtons['tv'].includes('Ch_next')) {
+        allowedButtons['tv'].push('Ch_next', 'Ch_prev');
+    }
+    if (allowedButtons['audio'] && !allowedButtons['audio'].includes('Next')) {
+        allowedButtons['audio'].push('Next', 'Prev', 'Play', 'Pause');
+    }
+    if (allowedButtons['ac'] && !allowedButtons['ac'].includes('Cool_hi')) {
+        allowedButtons['ac'] = ['Off', 'Cool_hi', 'Cool_lo', 'Heat_hi', 'Heat_lo', 'Dh'];
+    }
+
+    console.log("Updated allowed buttons:", allowedButtons);
+}
+
+
+async function updateDeviceTypeOptions() {
+    const selectedRepo = elements.repoSelect.value;
+    const repoInfo = REPOSITORIES[selectedRepo];
+    const files = await getIRAssetFiles(repoInfo);
+    
+    elements.deviceTypeSelect.innerHTML = '';
+    files.forEach(file => {
+        const option = document.createElement('option');
+        option.value = file.name; // e.g., 'ac.ir'
+        option.textContent = file.name.replace('.ir', '').toLowerCase(); // e.g., 'ac'
+        elements.deviceTypeSelect.appendChild(option);
+    });
+    
+    // Update allowed buttons after updating device types
+    await updateAllowedButtons();
+}
+
+
+// =========================
+// Event Listeners and Initialization
+// =========================
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Theme toggle
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        elements.body.classList.remove('light-mode', 'dark-mode');
+        elements.body.classList.add(savedTheme);
+        updateButtonText(savedTheme);
+    }
+
+    elements.themeToggleButton.addEventListener('click', () => {
+        const currentTheme = elements.body.classList.contains('light-mode') ? 'light-mode' : 'dark-mode';
+        const newTheme = currentTheme === 'light-mode' ? 'dark-mode' : 'light-mode';
+        elements.body.classList.remove(currentTheme);
+        elements.body.classList.add(newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateButtonText(newTheme);
+    });
+
+    // Check for 'webkitdirectory' support
+    const supportsWebkitDirectory = 'webkitdirectory' in document.createElement('input');
+    if (!supportsWebkitDirectory) {
+        elements.browserWarningElem.style.display = 'block';
+    }
+
+    // Update file input label and display file count
+    elements.fileInput.addEventListener('change', (event) => {
+        const files = event.target.files;
+        const irFiles = Array.from(files).filter(file => file.name.toLowerCase().endsWith('.ir'));
+        const fileCount = irFiles.length;
+        elements.fileCountElem.textContent = `${fileCount} .ir file${fileCount !== 1 ? 's' : ''} selected`;
+        elements.totalFilesElem.textContent = fileCount;
+        resetSummary();
+    });
+
+    // Process files
+    elements.processButton.addEventListener('click', () => {
+        const files = Array.from(elements.fileInput.files).filter(file => file.name.toLowerCase().endsWith('.ir'));
+        processFiles(files);
+    });
+
+    // Update device types when repository changes
+    elements.repoSelect.addEventListener('change', async () => {
+        await updateDeviceTypeOptions();
+    });
+
+    // Export summary
+    elements.exportSummaryBtn.addEventListener('click', exportSummary);
+
+    // Copy summary
+    elements.copySummaryBtn.addEventListener('click', copySummaryToClipboard);
+
+    // Populate repository select
+    populateRepoSelect();
+
+    // Initial population of device type options
+    updateDeviceTypeOptions();
+});
+
+// =========================
+// Helper Functions
+// =========================
+
+// Update button text based on the current theme
+function updateButtonText(theme) {
+    elements.themeToggleButton.textContent = theme === 'dark-mode' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+}
+
+// Show notification message
+function showNotification(message, type = 'info') {
+    elements.notification.classList.remove('success', 'error', 'info');
+    elements.notification.classList.add(type);
+    elements.notification.textContent = message;
+    elements.notification.classList.add('show');
+    setTimeout(() => {
+        elements.notification.classList.remove('show');
+    }, 5000);
+}
+
+// Populate repository select options
+function populateRepoSelect() {
+    elements.repoSelect.innerHTML = '';
+    Object.keys(REPOSITORIES).forEach(repoName => {
+        const option = document.createElement('option');
+        option.value = repoName;
+        option.textContent = repoName;
+        elements.repoSelect.appendChild(option);
+    });
+}
+
+// Reset progress bar and summary
+function resetProgress() {
+    elements.progressBar.style.width = '0%';
+    elements.progressBar.textContent = '0%';
+    elements.totalFilesElem.textContent = '0';
+    elements.totalSignalsElem.textContent = '0';
+    elements.newSignalsElem.textContent = '0';
+    elements.duplicateSignalsElem.textContent = '0';
+    elements.errorSignalsElem.textContent = '0';
+    elements.summary.classList.remove('show');
+    const detailedSummaryContainer = document.getElementById('detailed-summary');
+    if (detailedSummaryContainer) {
+        detailedSummaryContainer.innerHTML = '';
+        detailedSummaryContainer.style.display = 'none';
+    }
+    elements.exportSummaryBtn.disabled = true;
+    elements.copySummaryBtn.disabled = true;
+}
+
+// Reset summary counts
+function resetSummary() {
+    elements.totalSignalsElem.textContent = '0';
+    elements.newSignalsElem.textContent = '0';
+    elements.duplicateSignalsElem.textContent = '0';
+    elements.errorSignalsElem.textContent = '0';
+    elements.summary.classList.remove('show');
+    elements.exportSummaryBtn.disabled = true;
+    elements.copySummaryBtn.disabled = true;
+}
+
+// Update progress bar
+function updateProgress(percent) {
+    elements.progressBar.style.width = `${percent}%`;
+    elements.progressBar.textContent = `${Math.floor(percent)}%`;
+}
+
+// Update button summary in the UI
+function updateButtonSummary(buttonCounts, unnamedRawCount, renamedButtonCount) {
+    elements.buttonSummaryElem.innerHTML = '';
+    const sortedButtons = Object.entries(buttonCounts).sort((a, b) => a[0].localeCompare(b[0]));
+    for (const [button, count] of sortedButtons) {
+        const buttonElem = document.createElement('div');
+        buttonElem.textContent = `${button}: ${count}`;
+        elements.buttonSummaryElem.appendChild(buttonElem);
+    }
+    if (unnamedRawCount > 0) {
+        const unnamedRawElem = document.createElement('div');
+        unnamedRawElem.textContent = `Unnamed Raw Signals: ${unnamedRawCount}`;
+        unnamedRawElem.style.color = 'orange';  // Highlight this information
+        elements.buttonSummaryElem.appendChild(unnamedRawElem);
+    }
+    if (renamedButtonCount > 0) {
+        const renamedButtonsElem = document.createElement('div');
+        renamedButtonsElem.textContent = `Renamed Buttons: ${renamedButtonCount}`;
+        renamedButtonsElem.style.color = 'green';  // Highlight this information
+        elements.buttonSummaryElem.appendChild(renamedButtonsElem);
+    }
+    if (sortedButtons.length === 0 && unnamedRawCount === 0 && renamedButtonCount === 0) {
+        const noButtonsElem = document.createElement('p');
+        noButtonsElem.textContent = 'No supported universal buttons were added.';
+        elements.buttonSummaryElem.appendChild(noButtonsElem);
+    }
+}
+
+// Populate detailed summary in the UI
 function populateDetailedSummary(detailedData) {
     const detailedSummaryContainer = document.getElementById('detailed-summary');
 
@@ -1067,7 +1131,7 @@ function populateDetailedSummary(detailedData) {
 
     detailedData.forEach(data => {
         const row = document.createElement('tr');
-        
+
         const fileNameCell = document.createElement('td');
         fileNameCell.textContent = data.fileName;
         row.appendChild(fileNameCell);
@@ -1104,7 +1168,7 @@ function populateDetailedSummary(detailedData) {
     detailedSummaryContainer.style.display = 'block';
 }
 
-// Helper function to download the updated file
+// Download the updated universal IR file
 function downloadFile(content, filename) {
     const blob = new Blob([content], { type: "text/plain" });
     const link = document.createElement("a");
@@ -1116,18 +1180,7 @@ function downloadFile(content, filename) {
     URL.revokeObjectURL(link.href);
 }
 
-
-function normalizeButtonName(name) {
-    // Convert to lowercase and capitalize first letter of each word
-    return name.toLowerCase().replace(/(^|\s)\S/g, l => l.toUpperCase());
-}
-
-
-function generateDefaultRawName(index) {
-    return `Unnamed_Raw_${index}`;
-}
-
-
+// Export processing summary
 function exportSummary() {
     const summaryData = {
         totalFiles: elements.totalFilesElem.textContent,
@@ -1179,6 +1232,7 @@ function exportSummary() {
     document.body.removeChild(csvLink);
 }
 
+// Copy summary to clipboard
 function copySummaryToClipboard() {
     let summaryText = `Processing Summary:\n`;
     summaryText += `Total Files Processed: ${elements.totalFilesElem.textContent}\n`;
@@ -1186,13 +1240,13 @@ function copySummaryToClipboard() {
     summaryText += `New Signals: ${elements.newSignalsElem.textContent}\n`;
     summaryText += `Duplicate Signals: ${elements.duplicateSignalsElem.textContent}\n`;
     summaryText += `Errors: ${elements.errorSignalsElem.textContent}\n\n`;
-    
+
     summaryText += `Button Summary:\n`;
     const buttonSummaryElems = document.querySelectorAll('#button-summary div');
     buttonSummaryElems.forEach(elem => {
         summaryText += `${elem.textContent}\n`;
     });
-    
+
     summaryText += `\nDetailed Summary:\n`;
     const detailedRows = document.querySelectorAll('#detailed-summary table tr');
     detailedRows.forEach((row, index) => {
@@ -1233,20 +1287,20 @@ function copySummaryToClipboard() {
     }
 }
 
-// Helper function to convert summary data to CSV (update if needed)
+// Convert summary data to CSV format
 function convertSummaryToCSV(summaryData) {
     let csvContent = `Total Files Processed,${summaryData.totalFiles}\n`;
     csvContent += `Total Signals,${summaryData.totalSignals}\n`;
     csvContent += `New Signals,${summaryData.newSignals}\n`;
     csvContent += `Duplicate Signals,${summaryData.duplicateSignals}\n`;
     csvContent += `Errors,${summaryData.errorSignals}\n\n`;
-    
+
     csvContent += `Button Counts\n`;
     for (const [button, count] of Object.entries(summaryData.buttonCounts)) {
         csvContent += `${button},${count}\n`;
     }
     csvContent += `\n`;
-    
+
     csvContent += `File Name,New Signals,Duplicate Signals,Errors,Error Messages\n`;
     summaryData.detailedSummary.forEach(file => {
         const escapedFileName = file.fileName.replace(/"/g, '""');

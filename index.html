@@ -24,6 +24,32 @@
             --input-light-border: #ced4da;
             --input-dark-border: #555;
             --input-focus-shadow: rgba(255, 147, 0, 0.25);
+            --button-summary-bg-light: #f0f0f0;
+            --button-summary-bg-dark: #444;
+            --summary-container-bg-light: #f9f9f9;
+            --summary-container-bg-dark: #1e1e1e;
+            --summary-item-bg-light: #ffffff;
+            --summary-item-bg-dark: #2a2a2a;
+            --summary-item-box-shadow-light: rgba(0,0,0,0.05);
+            --summary-item-box-shadow-dark: rgba(0,0,0,0.3);
+            --detailed-summary-th-bg-light: #f2f2f2;
+            --detailed-summary-th-bg-dark: #444;
+            --detailed-summary-border-light: #ddd;
+            --detailed-summary-border-dark: #555;
+            --progress-container-bg-light: #ddd;
+            --progress-container-bg-dark: #555;
+            --notification-success-bg-light: #d4edda;
+            --notification-success-text-light: #155724;
+            --notification-success-bg-dark: #155724;
+            --notification-success-text-dark: #d4edda;
+            --notification-error-bg-light: #f8d7da;
+            --notification-error-text-light: #721c24;
+            --notification-error-bg-dark: #721c24;
+            --notification-error-text-dark: #f8d7da;
+            --notification-info-bg-light: #d1ecf1;
+            --notification-info-text-light: #0c5460;
+            --notification-info-bg-dark: #0c5460;
+            --notification-info-text-dark: #d1ecf1;
         }
 
         /* Global Styles */
@@ -125,10 +151,9 @@
         }
 
         body.dark-mode .instructions {
-        background-color: #111;
-        /* Other styles if necessary */
-    }
-
+            background-color: #111;
+            color: var(--dark-text);
+        }
 
         .instructions h2 {
             margin-top: 0;
@@ -144,11 +169,16 @@
         }
 
         .button-summary div {
-            background-color: #f0f0f0;
+            background-color: var(--button-summary-bg-light);
             padding: 5px 10px;
             border-radius: 5px;
             text-align: center;
             font-size: 14px;
+        }
+
+        body.dark-mode .button-summary div {
+            background-color: var(--button-summary-bg-dark);
+            color: var(--dark-text);
         }
 
         /* Input, Select, and Textarea Styles */
@@ -238,10 +268,14 @@
         /* Progress Bar Styles */
         .progress-container {
             width: 100%;
-            background-color: #ddd;
+            background-color: var(--progress-container-bg-light);
             border-radius: 4px;
             margin: 20px 0;
             display: none; /* Initially hidden */
+        }
+
+        body.dark-mode .progress-container {
+            background-color: var(--progress-container-bg-dark);
         }
 
         .progress-bar {
@@ -260,10 +294,16 @@
             border: 1px solid #ccc;
             padding: 20px;
             border-radius: 8px;
-            background-color: #f9f9f9;
+            background-color: var(--summary-container-bg-light);
             transition: opacity 0.5s ease;
             opacity: 0;
             display: none;
+        }
+
+        body.dark-mode .summary-container {
+            background-color: var(--summary-container-bg-dark);
+            border-color: var(--dark-border);
+            color: var(--dark-text);
         }
 
         /* Show Summary when Data is Available */
@@ -289,8 +329,14 @@
             justify-content: space-between;
             padding: 10px;
             border-radius: 5px;
-            background-color: #ffffff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            background-color: var(--summary-item-bg-light);
+            box-shadow: 0 2px 4px var(--summary-item-box-shadow-light);
+        }
+
+        body.dark-mode .summary-item {
+            background-color: var(--summary-item-bg-dark);
+            box-shadow: 0 2px 4px var(--summary-item-box-shadow-dark);
+            color: var(--dark-text);
         }
 
         /* Labels and Values in Summary */
@@ -327,13 +373,23 @@
         }
 
         .detailed-summary th, .detailed-summary td {
-            border: 1px solid #ddd;
+            border: 1px solid var(--detailed-summary-border-light);
             padding: 8px;
             text-align: center;
         }
 
+        body.dark-mode .detailed-summary th, 
+        body.dark-mode .detailed-summary td {
+            border-color: var(--detailed-summary-border-dark);
+            color: var(--dark-text);
+        }
+
         .detailed-summary th {
-            background-color: #f2f2f2;
+            background-color: var(--detailed-summary-th-bg-light);
+        }
+
+        body.dark-mode .detailed-summary th {
+            background-color: var(--detailed-summary-th-bg-dark);
         }
 
         /* Summary Actions Buttons */
@@ -377,18 +433,33 @@
 
         /* Notification Types */
         .notification.success {
-            background-color: #d4edda;
-            color: #155724;
+            background-color: var(--notification-success-bg-light);
+            color: var(--notification-success-text-light);
+        }
+
+        body.dark-mode .notification.success {
+            background-color: var(--notification-success-bg-dark);
+            color: var(--notification-success-text-dark);
         }
 
         .notification.error {
-            background-color: #f8d7da;
-            color: #721c24;
+            background-color: var(--notification-error-bg-light);
+            color: var(--notification-error-text-light);
+        }
+
+        body.dark-mode .notification.error {
+            background-color: var(--notification-error-bg-dark);
+            color: var(--notification-error-text-dark);
         }
 
         .notification.info {
-            background-color: #d1ecf1;
-            color: #0c5460;
+            background-color: var(--notification-info-bg-light);
+            color: var(--notification-info-text-light);
+        }
+
+        body.dark-mode .notification.info {
+            background-color: var(--notification-info-bg-dark);
+            color: var(--notification-info-text-dark);
         }
 
         /* Error Messages in Detailed Summary */
@@ -485,6 +556,10 @@
             color: #555;
             margin-top: -10px;
             margin-bottom: 20px;
+        }
+
+        body.dark-mode #file-count {
+            color: var(--dark-text);
         }
 
         /* Responsive Design for Smaller Screens */
@@ -634,6 +709,8 @@
             <!-- Device types will be populated dynamically -->
         </select>
 
+
+        
         <!-- Process Button -->
         <button id="process-btn">Append to Universal IR File</button>
 
