@@ -30,9 +30,13 @@ const elements = {
 let allowedButtons = {
     'tv': ['Power', 'Vol_up', 'Vol_dn', 'Ch_next', 'Ch_prev', 'Mute'],
     'audio': ['Power', 'Vol_up', 'Vol_dn', 'Next', 'Prev', 'Mute', 'Play', 'Pause'],
+    'ac': ['Off', 'Cool_hi', 'Cool_lo', 'Heat_hi', 'Heat_lo', 'Dh'],
+    'fan': ['Power', 'Speed_up', 'Speed_dn', 'Mode', 'Rotate', 'Timer'],
+    'led': ['POWER', 'BRIGHTNESS+', 'BRIGHTNESS-', 'FLASH'],
+    'monitor': ['Power', 'Source', 'Menu', 'Exit'],
     'projector': ['Power', 'Vol_up', 'Vol_dn', 'Mute'],
-    'ac': ['Off', 'Cool_hi', 'Cool_lo', 'Heat_hi', 'Heat_lo', 'Dh']
-};
+    'digital_sign': ['Power', 'Source', 'Play', 'Stop']
+    };
 
 // Mapping of button names to standard names per device type
 const buttonNameMapping = {
@@ -341,6 +345,131 @@ const buttonNameMapping = {
         "heat(?:_)?min": "Heat_lo",
         "gentle(?:_)?heat": "Heat_lo",
         "gnt(?:_)?heat": "Heat_lo"
+    },
+    "fans": {
+        // Power
+        "power": "Power",
+        "pwr": "Power",
+        "on(?:)?off": "Power",
+        "switch": "Power",
+        "toggle": "Power",
+        // Speed Up
+        "speed(?:)?up": "Speed_up",
+        "faster": "Speed_up",
+        "increase(?:)?speed": "Speed_up",
+        "spd(?:)?up": "Speed_up",
+        "speed(?:)?\+": "Speed_up",
+        // Speed Down
+        "speed(?:)?down": "Speed_dn",
+        "speed(?:)?dn": "Speed_dn",
+        "slower": "Speed_dn",
+        "decrease(?:)?speed": "Speed_dn",
+        "spd(?:)?dn": "Speed_dn",
+        "speed(?:)?\-": "Speed_dn",
+        // Mode
+        "mode": "Mode",
+        "function": "Mode",
+        "air(?:)?flow": "Mode",
+        "fan(?:)?mode": "Mode",
+        // Rotate
+        "rotate": "Rotate",
+        "oscillate": "Rotate",
+        "swing": "Rotate",
+        "scan": "Rotate",
+        // Timer
+        "timer": "Timer",
+        "auto(?:)?off": "Timer",
+        "schedule": "Timer",
+        "delay(?:)?off": "Timer"
+    },
+    "led": {
+        // Power
+        "power": "POWER",
+        "pwr": "POWER",
+        "on_?off": "POWER",
+        "switch": "POWER",
+        "toggle": "POWER",
+        // Brightness Up
+        "brightness\\+": "BRIGHTNESS+",
+        "brightness_?up": "BRIGHTNESS+",
+        "brighter": "BRIGHTNESS+",
+        "intensify": "BRIGHTNESS+",
+        "bright\\+": "BRIGHTNESS+",
+        "bright_?up": "BRIGHTNESS+",
+        // Brightness Down
+        "brightness-": "BRIGHTNESS-",
+        "brightness_?down": "BRIGHTNESS-",
+        "dimmer": "BRIGHTNESS-",
+        "soften": "BRIGHTNESS-",
+        "bright-": "BRIGHTNESS-",
+        "bright_?down": "BRIGHTNESS-",
+        // Flash
+        "flash": "FLASH",
+        "strobe": "FLASH",
+        "blink": "FLASH",
+        "pulse": "FLASH"
+    },
+    "monitor": {
+        // Power
+        "power": "Power",
+        "pwr": "Power",
+        "on(?:)?off": "Power",
+        "switch": "Power",
+        "toggle": "Power",
+        // Source
+        "source": "Source",
+        "input": "Source",
+        "input(?:)?select": "Source",
+        // Menu
+        "menu": "Menu",
+        "osd": "Menu",
+        "on(?:)?screen(?:)?display": "Menu",
+        "settings": "Menu",
+        // Exit
+        "exit": "Exit",
+        "close": "Exit",
+        "esc": "Exit"
+    },
+    "projectors": {
+        // Power
+        "power": "Power",
+        "pwr": "Power",
+        "on(?:)?off": "Power",
+        "switch": "Power",
+        "toggle": "Power",
+        // Volume Up
+        "vol(?:)?up": "Vol_up",
+        "volume(?:)?up": "Vol_up",
+        "vol(?:)?\+": "Vol_up",
+        // Volume Down
+        "vol(?:)?down": "Vol_dn",
+        "vol(?:)?dn": "Vol_dn",
+        "volume(?:)?down": "Vol_dn",
+        "vol(?:)?\-": "Vol_dn",
+        // Mute
+        "mute": "Mute",
+        "silence": "Mute",
+        "quiet": "Mute"
+    },
+    "digital_sign": {
+        // Power
+        "power": "Power",
+        "pwr": "Power",
+        "on(?:)?off": "Power",
+        "switch": "Power",
+        "toggle": "Power",
+        // Source
+        "source": "Source",
+        "input": "Source",
+        "input(?:)?select": "Source",
+        // Play
+        "play": "Play",
+        "start(?:)?content": "Play",
+        "begin": "Play",
+        // Stop
+        "stop": "Stop",
+        "end(?:_)?content": "Stop",
+        "halt": "Stop"
     }
 };
 
