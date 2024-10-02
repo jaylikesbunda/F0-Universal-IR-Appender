@@ -35,7 +35,7 @@ let allowedButtons = {
     'ac': ['Off', 'Cool_hi', 'Cool_lo', 'Heat_hi', 'Heat_lo', 'Dh'],
     'fan': ['Power', 'Speed_up', 'Speed_dn', 'Mode', 'Rotate', 'Timer'],
     'led': ['POWER', 'BRIGHTNESS+', 'BRIGHTNESS-', 'FLASH'],
-    'monitor': ['Power', 'Source', 'Menu', 'Exit'],
+    'monitor': ['POWER', 'SOURCE', 'MENU', 'EXIT'],
     'projector': ['Power', 'Vol_up', 'Vol_dn', 'Mute'],
     'digital_sign': ['Power', 'Source', 'Play', 'Stop']
     };
@@ -413,24 +413,24 @@ const buttonNameMapping = {
     },
     "monitor": {
         // Power
-        "power": "Power",
-        "pwr": "Power",
-        "on(?:)?off": "Power",
-        "switch": "Power",
-        "toggle": "Power",
+        "power": "POWER",
+        "pwr": "POWER",
+        "on(?:)?off": "POWER",
+        "switch": "POWER",
+        "toggle": "POWER",
         // Source
-        "source": "Source",
-        "input": "Source",
-        "input(?:)?select": "Source",
+        "source": "SOURCE",
+        "input": "SOURCE",
+        "input(?:)?select": "SOURCE",
         // Menu
-        "menu": "Menu",
-        "osd": "Menu",
-        "on(?:)?screen(?:)?display": "Menu",
-        "settings": "Menu",
+        "menu": "MENU",
+        "osd": "MENU",
+        "on(?:)?screen(?:)?display": "MENU",
+        "settings": "MENU",
         // Exit
-        "exit": "Exit",
-        "close": "Exit",
-        "esc": "Exit"
+        "exit": "EXIT",
+        "close": "EXIT",
+        "esc": "EXIT"
     },
     "projectors": {
         // Power
@@ -477,17 +477,17 @@ const buttonNameMapping = {
 
 // Repositories information
 const REPOSITORIES = {
-    'Next-Flip': {
+    'Momentum': {
         owner: 'Next-Flip',
         repo: 'Momentum-Firmware',
         branch: 'dev'
     },
-    'DarkFlippers': {
+    'Unleashed': {
         owner: 'DarkFlippers',
         repo: 'unleashed-firmware',
         branch: 'dev'
     },
-    'Flipper Devices': {
+    'Official': {
         owner: 'flipperdevices',
         repo: 'flipperzero-firmware',
         branch: 'dev'
