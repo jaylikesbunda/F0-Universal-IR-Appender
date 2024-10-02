@@ -436,18 +436,18 @@ const buttonNameMapping = {
         // Power
         "power": "Power",
         "pwr": "Power",
-        "on(?:)?off": "Power",
+        "on(?:_)?off": "Power",
         "switch": "Power",
         "toggle": "Power",
         // Volume Up
-        "vol(?:)?up": "Vol_up",
-        "volume(?:)?up": "Vol_up",
-        "vol(?:)?\+": "Vol_up",
+        "vol(?:_)?up": "Vol_up",
+        "volume(?:_)?up": "Vol_up",
+        "vol\\+": "Vol_up",
         // Volume Down
-        "vol(?:)?down": "Vol_dn",
-        "vol(?:)?dn": "Vol_dn",
-        "volume(?:)?down": "Vol_dn",
-        "vol(?:)?\-": "Vol_dn",
+        "vol(?:_)?down": "Vol_dn",
+        "vol(?:_)?dn": "Vol_dn",
+        "volume(?:_)?down": "Vol_dn",
+        "vol\\-": "Vol_dn",
         // Mute
         "mute": "Mute",
         "silence": "Mute",
