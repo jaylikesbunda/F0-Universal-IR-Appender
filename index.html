@@ -3,706 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <title>Universal IR Appender</title>
-    <!-- Stylesheet Link -->
     <link rel="stylesheet" href="styles.css">
-    <style>
-        /* Color variables for flexibility */
-        :root {
-            --flipper-orange: #FF9300;
-            --flipper-orange-hover: #e68200;
-            --flipper-orange-active: #cc7600;
-            --light-background: #f0f0f0;
-            --dark-background: #333;
-            --light-text: #333;
-            --dark-text: #f0f0f0;
-            --light-container-bg: #ffffff;
-            --dark-container-bg: #2c2c2c;
-            --light-border: #e0e0e0;
-            --dark-border: #444;
-            --input-light-bg: #ffffff;
-            --input-dark-bg: #3a3a3a;
-            --input-light-border: #ced4da;
-            --input-dark-border: #555;
-            --input-focus-shadow: rgba(255, 147, 0, 0.25);
-            --button-summary-bg-light: #f0f0f0;
-            --button-summary-bg-dark: #444;
-            --summary-container-bg-light: #f9f9f9;
-            --summary-container-bg-dark: #1e1e1e;
-            --summary-item-bg-light: #ffffff;
-            --summary-item-bg-dark: #2a2a2a;
-            --summary-item-box-shadow-light: rgba(0,0,0,0.05);
-            --summary-item-box-shadow-dark: rgba(0,0,0,0.3);
-            --detailed-summary-th-bg-light: #f2f2f2;
-            --detailed-summary-th-bg-dark: #444;
-            --detailed-summary-border-light: #ddd;
-            --detailed-summary-border-dark: #555;
-            --progress-container-bg-light: #ddd;
-            --progress-container-bg-dark: #555;
-            --notification-success-bg-light: #d4edda;
-            --notification-success-text-light: #155724;
-            --notification-success-bg-dark: #155724;
-            --notification-success-text-dark: #d4edda;
-            --notification-error-bg-light: #f8d7da;
-            --notification-error-text-light: #721c24;
-            --notification-error-bg-dark: #721c24;
-            --notification-error-text-dark: #f8d7da;
-            --notification-info-bg-light: #d1ecf1;
-            --notification-info-text-light: #0c5460;
-            --notification-info-bg-dark: #0c5460;
-            --notification-info-text-dark: #d1ecf1;
-        }
-
-        /* Global Styles */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            transition: background-color 0.3s ease, color 0.3s ease;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Light Mode Styles */
-        body.light-mode {
-            background: linear-gradient(135deg, var(--light-background), #e6e6e6);
-            color: var(--light-text);
-        }
-
-        /* Dark Mode Styles */
-        body.dark-mode {
-            background: linear-gradient(135deg, var(--dark-background), #000000);
-            color: #fff;
-        }
-
-        /* Container Styles */
-        .container {
-            max-width: 600px;
-            width: 90%;
-            background-color: var(--light-container-bg);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--light-border);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-                .checkbox-container {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .checkbox-container input[type="checkbox"] {
-            margin-right: 10px;
-            width: auto;
-        }
-
-        .checkbox-container label {
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        /* Adjustments for Dark Mode */
-        body.dark-mode .container {
-            background-color: var(--dark-container-bg);
-            border-color: var(--dark-border);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Decorative Gradient on Hover */
-        .container::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,147,0,0.1) 0%, rgba(255,147,0,0) 70%);
-            transform: rotate(45deg);
-            z-index: -1;
-            transition: all 0.5s ease;
-        }
-
-        .container:hover::before {
-            transform: rotate(60deg);
-        }
-
-        /* Heading Styles */
-        h1 {
-            text-align: center;
-            color: var(--flipper-orange);
-            font-size: 32px;
-            margin-bottom: 30px;
-            font-weight: 700;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-            position: relative;
-            padding-bottom: 15px;
-        }
-
-        /* Underline Decoration for Heading */
-        h1::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 4px;
-            background-color: var(--flipper-orange);
-            border-radius: 2px;
-        }
-
-        /* Instructions Section */
-        .instructions {
-            background-color: #e9ecef;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        body.dark-mode .instructions {
-            background-color: #111;
-            color: var(--dark-text);
-        }
-
-        .instructions h2 {
-            margin-top: 0;
-            color: var(--flipper-orange);
-        }
-
-        /* Button Summary Grid */
-        .button-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .button-summary div {
-            background-color: var(--button-summary-bg-light);
-            padding: 5px 10px;
-            border-radius: 5px;
-            text-align: center;
-            font-size: 14px;
-        }
-
-        body.dark-mode .button-summary div {
-            background-color: var(--button-summary-bg-dark);
-            color: var(--dark-text);
-        }
-
-        /* Input, Select, and Textarea Styles */
-        input, select, textarea {
-            width: 100%;
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            border: 2px solid var(--input-light-border);
-            border-radius: 30px;
-            background-color: var(--input-light-bg);
-            color: var(--light-text);
-            font-size: 16px;
-            transition: all 0.3s ease;
-            box-sizing: border-box;
-        }
-
-        /* Dark Mode Input Adjustments */
-        body.dark-mode input, 
-        body.dark-mode select, 
-        body.dark-mode textarea {
-            background-color: var(--input-dark-bg);
-            color: var(--dark-text);
-            border-color: var(--input-dark-border);
-        }
-
-        /* Focus Styles for Inputs */
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--flipper-orange);
-            outline: none;
-            box-shadow: 0 0 0 4px var(--input-focus-shadow);
-            transform: translateY(-2px);
-        }
-
-        /* Button Styles */
-        button {
-            display: block;
-            width: 100%;
-            padding: 16px;
-            background-color: var(--flipper-orange);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Button Shine Effect */
-        button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                120deg,
-                transparent,
-                rgba(255, 255, 255, 0.3),
-                transparent
-            );
-            transition: all 0.6s;
-        }
-
-        button:hover::before {
-            left: 100%;
-        }
-
-        /* Button Hover and Active States */
-        button:hover {
-            background-color: var(--flipper-orange-hover);
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(255, 147, 0, 0.3);
-        }
-
-        button:active {
-            background-color: var(--flipper-orange-active);
-            transform: translateY(-1px);
-            box-shadow: 0 3px 8px rgba(255, 147, 0, 0.3);
-        }
-
-        /* Progress Bar Styles */
-        .progress-container {
-            width: 100%;
-            background-color: var(--progress-container-bg-light);
-            border-radius: 4px;
-            margin: 20px 0;
-            display: none; /* Initially hidden */
-        }
-
-        body.dark-mode .progress-container {
-            background-color: var(--progress-container-bg-dark);
-        }
-
-        .progress-bar {
-            width: 0%;
-            height: 20px;
-            background-color: var(--flipper-orange);
-            border-radius: 4px;
-            text-align: center;
-            color: white;
-            line-height: 20px;
-            font-size: 12px;
-        }
-
-        /* Summary Section Styles */
-        .summary-container {
-            border: 1px solid #ccc;
-            padding: 20px;
-            border-radius: 8px;
-            background-color: var(--summary-container-bg-light);
-            transition: opacity 0.5s ease;
-            opacity: 0;
-            display: none;
-        }
-
-        body.dark-mode .summary-container {
-            background-color: var(--summary-container-bg-dark);
-            border-color: var(--dark-border);
-            color: var(--dark-text);
-        }
-
-        /* Show Summary when Data is Available */
-        .summary-container.show {
-            display: block;
-            opacity: 1;
-        }
-
-        .summary-container h2 {
-            margin-bottom: 15px;
-        }
-
-        /* Summary Details Flex Layout */
-        .summary-details {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .summary-item {
-            flex: 1 1 200px;
-            display: flex;
-            justify-content: space-between;
-            padding: 10px;
-            border-radius: 5px;
-            background-color: var(--summary-item-bg-light);
-            box-shadow: 0 2px 4px var(--summary-item-box-shadow-light);
-        }
-
-        body.dark-mode .summary-item {
-            background-color: var(--summary-item-bg-dark);
-            box-shadow: 0 2px 4px var(--summary-item-box-shadow-dark);
-            color: var(--dark-text);
-        }
-
-        /* Labels and Values in Summary */
-        .summary-label {
-            font-weight: bold;
-        }
-
-        .summary-value {
-            /* Colors will be dynamically assigned via JavaScript */
-        }
-
-        .summary-value.success {
-            color: green;
-        }
-
-        .summary-value.warning {
-            color: orange;
-        }
-
-        .summary-value.error {
-            color: red;
-        }
-
-        /* Detailed Summary Table */
-        .detailed-summary {
-            margin-top: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .detailed-summary table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .detailed-summary th, .detailed-summary td {
-            border: 1px solid var(--detailed-summary-border-light);
-            padding: 8px;
-            text-align: center;
-        }
-
-        body.dark-mode .detailed-summary th, 
-        body.dark-mode .detailed-summary td {
-            border-color: var(--detailed-summary-border-dark);
-            color: var(--dark-text);
-        }
-
-        .detailed-summary th {
-            background-color: var(--detailed-summary-th-bg-light);
-        }
-
-        body.dark-mode .detailed-summary th {
-            background-color: var(--detailed-summary-th-bg-dark);
-        }
-
-        /* Summary Actions Buttons */
-        .summary-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .summary-actions button {
-            flex: 1;
-        }
-
-        /* Notification Styles */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            min-width: 250px;
-            padding: 15px 20px;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            z-index: 1000;
-            display: none;
-            font-size: 14px;
-        }
-
-        /* Show Notification with Animation */
-        .notification.show {
-            display: block;
-            animation: fadeInOut 5s forwards;
-        }
-
-        /* Notification Fade In and Out */
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(-20px); }
-            10% { opacity: 1; transform: translateY(0); }
-            90% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-20px); }
-        }
-
-        /* Notification Types */
-        .notification.success {
-            background-color: var(--notification-success-bg-light);
-            color: var(--notification-success-text-light);
-        }
-
-        body.dark-mode .notification.success {
-            background-color: var(--notification-success-bg-dark);
-            color: var(--notification-success-text-dark);
-        }
-
-        .notification.error {
-            background-color: var(--notification-error-bg-light);
-            color: var(--notification-error-text-light);
-        }
-
-        body.dark-mode .notification.error {
-            background-color: var(--notification-error-bg-dark);
-            color: var(--notification-error-text-dark);
-        }
-
-        .notification.info {
-            background-color: var(--notification-info-bg-light);
-            color: var(--notification-info-text-light);
-        }
-
-        body.dark-mode .notification.info {
-            background-color: var(--notification-info-bg-dark);
-            color: var(--notification-info-text-dark);
-        }
-
-        /* Error Messages in Detailed Summary */
-        .detailed-summary .error p {
-            color: red;
-            margin: 0;
-        }
-
-        /* Export and Copy Buttons Styles */
-        .export-button, .copy-button {
-            padding: 10px 15px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-
-        .export-button:hover, .copy-button:hover {
-            background-color: #0056b3;
-        }
-
-        .copy-button {
-            background-color: #28a745;
-        }
-
-        .copy-button:hover {
-            background-color: #1e7e34;
-        }
-
-        /* Theme Toggle Button */
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-
-        .theme-toggle button {
-            background-color: var(--flipper-orange);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 10px 15px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .theme-toggle button:hover {
-            background-color: var(--flipper-orange-hover);
-        }
-
-        /* Custom File Input Styles */
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-
-        .file-input-wrapper label {
-            display: block;
-            padding: 15px 20px;
-            background-color: var(--flipper-orange);
-            color: white;
-            border-radius: 30px;
-            text-align: center;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .file-input-wrapper label:hover {
-            background-color: var(--flipper-orange-hover);
-        }
-
-        /* File Count Display */
-        #file-count {
-            font-size: 14px;
-            color: #555;
-            margin-top: -10px;
-            margin-bottom: 20px;
-        }
-
-        body.dark-mode #file-count {
-            color: var(--dark-text);
-        }
-
-        /* Responsive Design for Smaller Screens */
-        @media (max-width: 768px) {
-            .container {
-                width: 100%;
-                max-width: none;
-                padding: 20px;
-                border-radius: 15px;
-                box-sizing: border-box;
-            }
-
-            h1 {
-                font-size: 24px;
-                margin-bottom: 20px;
-            }
-
-            input, select, textarea, button, .file-input-wrapper label {
-                width: 100%;
-                font-size: 16px;
-                padding: 12px 16px;
-                margin-bottom: 15px;
-                box-sizing: border-box;
-            }
-
-            .file-input-wrapper {
-                margin-bottom: 15px;
-            }
-
-            .theme-toggle {
-                position: fixed;
-                top: 20px;
-                right: 80px; /* Adjust if necessary */
-            }
-
-            .theme-toggle button {
-                padding: 10px 16px;
-                font-size: 14px;
-            }
-
-            .instructions {
-                font-size: 16px;
-                padding: 0 20px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 15px;
-            }
-
-            h1 {
-                font-size: 22px;
-                margin-bottom: 15px;
-            }
-
-            input, select, textarea, button, .file-input-wrapper label {
-                font-size: 14px;
-                padding: 10px 14px;
-            }
-
-            .theme-toggle button {
-                padding: 8px 12px;
-                font-size: 12px;
-            }
-
-            .instructions {
-                font-size: 14px;
-            }
-        }
-    </style>
 </head>
 <body class="light-mode">
-    <!-- Main Container -->
     <div class="container">
-        <!-- Application Title -->
-        <h1>Universal IR Appender v1.5</h1>
+        <h1>Universal IR Appender v1.6</h1>
 
-    <!-- Instructions Section -->
-    <div class="instructions">
-        <h2>How to Use</h2>
-        <ol>
-            <li>
-                <strong>Select the folder containing your .ir files.</strong>
-                <p>Click on the "Choose Folder..." button and navigate to the folder where your `.ir` files are stored. The application will automatically detect all `.ir` files within that folder and display the count of files selected.</p>
-            </li>
-            <li>
-                <strong>Choose the appropriate repository and device type from the dropdowns.</strong>
-                <p>Select the repository you wish to use from the "Select the Universal File" dropdown. The device types available will update based on the selected repository. Then, choose the device type that matches your `.ir` files (e.g., TV, Audio Player, Projector, Air Conditioner) from the "Select the Device Type" dropdown.</p>
-            </li>
-            <li>
-                <strong>Click "Append to Universal IR File" to start processing.</strong>
-                <p>When you click this button, the application will:</p>
-                <ul>
-                    <li>Fetch the latest universal IR file for the selected device type from the chosen repository.</li>
-                    <li>Read each of your `.ir` files and extract the infrared signals.</li>
-                    <li>Compare the signals against a list of allowed buttons for the device type to filter out unwanted signals.</li>
-                    <li>Rename buttons as necessary to match standard names.</li>
-                    <li>Avoid adding duplicate signals by checking against existing ones in the universal file.</li>
-                    <li>Append new and valid signals to the universal IR file content.</li>
-                </ul>
-                <p>The progress bar will display the processing status as your files are being processed.</p>
-            </li>
-            <li>
-                <strong>View the summary and export or copy the results as needed.</strong>
-                <p>After processing is complete, a summary will appear showing:</p>
-                <ul>
-                    <li>Total files processed.</li>
-                    <li>Total signals found, new signals added, duplicate signals, and any errors encountered.</li>
-                    <li>Counts of each type of button processed.</li>
-                    <li>Details about unnamed raw signals and renamed buttons.</li>
-                </ul>
-                <p>You can export the summary as JSON or CSV files using the "Export Summary" button or copy it to your clipboard using the "Copy Summary" button.</p>
-            </li>
-        </ol>
+        <div class="instructions">
+            <h2>How to Use</h2>
+            <ol>
+                <li>
+                    <strong>Select the folder containing your .ir files.</strong>
+                    <p>Click on the "Choose Folder..." button and navigate to the folder where your `.ir` files are stored. The application will automatically detect all `.ir` files within that folder and display the count of files selected.</p>
+                </li>
+                <li>
+                    <strong>Choose the appropriate repository and device type from the dropdowns.</strong>
+                    <p>Select the repository you wish to use from the "Select the Universal File" dropdown. The device types available will update based on the selected repository. Then, choose the device type that matches your `.ir` files (e.g., TV, Audio Player, Projector, Air Conditioner) from the "Select the Device Type" dropdown.</p>
+                </li>
+                <li>
+                    <strong>Click "Append to Universal IR File" to start processing.</strong>
+                    <p>When you click this button, the application will:</p>
+                    <ul>
+                        <li>Fetch the latest universal IR file for the selected device type from the chosen repository.</li>
+                        <li>Read each of your `.ir` files and extract the infrared signals.</li>
+                        <li>Compare the signals against a list of allowed buttons for the device type to filter out unwanted signals.</li>
+                        <li>Rename buttons as necessary to match standard names.</li>
+                        <li>Avoid adding duplicate signals by checking against existing ones in the universal file.</li>
+                        <li>Append new and valid signals to the universal IR file content.</li>
+                    </ul>
+                    <p>The progress bar will display the processing status as your files are being processed.</p>
+                </li>
+                <li>
+                    <strong>View the summary and export or copy the results as needed.</strong>
+                    <p>After processing is complete, a summary will appear showing:</p>
+                    <ul>
+                        <li>Total files processed.</li>
+                        <li>Total signals found, new signals added, duplicate signals, and any errors encountered.</li>
+                        <li>Counts of each type of button processed.</li>
+                        <li>Details about unnamed raw signals and renamed buttons.</li>
+                    </ul>
+                    <p>You can export the summary as JSON or CSV files using the "Export Summary" button or copy it to your clipboard using the "Copy Summary" button.</p>
+                </li>
+            </ol>
 
-        <h2>Device Naming Guidelines</h2>
-        <p>
-            The application attempts to extract the device's <strong>Brand</strong> and <strong>Model</strong> from the content of your `.ir` files. If this information is not found within the file, it will try to infer it from the filename, expecting the format <em>Brand_Model.ir</em> (e.g., <em>Samsung_TV.ir</em>). This helps organize the universal IR file by grouping signals under the correct device identifiers.
-        </p>
-        <p>
-            <strong>Fallback:</strong> If the application cannot extract the Brand and Model from either the file content or filename, it will use the entire filename (without the `.ir` extension) as the device identifier. While this ensures all signals are included, following the naming guidelines is recommended for better organization.
-        </p>
-    </div>
+            <h2>Device Naming Guidelines</h2>
+            <p>
+                The application attempts to extract the device's <strong>Brand</strong> and <strong>Model</strong> from the content of your `.ir` files. If this information is not found within the file, it will try to infer it from the filename, expecting the format <em>Brand_Model.ir</em> (e.g., <em>Samsung_TV.ir</em>). This helps organize the universal IR file by grouping signals under the correct device identifiers.
+            </p>
+            <p>
+                <strong>Fallback:</strong> If the application cannot extract the Brand and Model from either the file content or filename, it will use the entire filename (without the `.ir` extension) as the device identifier. While this ensures all signals are included, following the naming guidelines is recommended for better organization.
+            </p>
+        </div>
 
-
-        <!-- File Selection Section -->
         <label for="file-input">Select the Folder Containing .ir Files</label>
         <div class="file-input-wrapper">
             <input type="file" id="file-input" webkitdirectory multiple />
@@ -713,29 +65,27 @@
             Your browser does not support folder selection. Please select multiple .ir files individually.
         </p>
 
-        <!-- Repository Selection -->
         <label for="device-type">Select the Universal File</label>
         <select id="repo-select">
             <!-- Options will be populated dynamically via JavaScript -->
         </select>
 
-        <!-- Device Type Selection -->
         <label for="device-type">Select the Device Type</label>
         <select id="device-type">
             <!-- Device types will be populated dynamically -->
         </select>
 
-
+        <div class="checkbox-container">
+            <input type="checkbox" id="omit-raw-signals" name="omit-raw-signals">
+            <label for="omit-raw-signals">Omit raw signals</label>
+        </div>
         
-        <!-- Process Button -->
         <button id="process-btn">Append to Universal IR File</button>
 
-        <!-- Progress Bar -->
         <div class="progress-container" id="progress-container">
             <div class="progress-bar" id="progress-bar">0%</div>
         </div>
 
-        <!-- Summary Section -->
         <div id="summary" class="summary-container" aria-labelledby="summary-heading" role="region">
             <h2 id="summary-heading">Processing Summary</h2>
             <div class="summary-details">
@@ -769,35 +119,29 @@
                 </div>
             </div>
         
-            <!-- Button Summary Section -->
             <h3>Button Summary</h3>
             <div id="button-summary" class="button-summary">
                 <!-- Button summary will be injected here via JavaScript -->
             </div>
             
-            <!-- Summary Actions -->
             <div class="summary-actions">
                 <button id="export-summary-btn" class="export-button">Export Summary</button>
                 <button id="copy-summary-btn" class="copy-button">Copy Summary</button>
             </div>
             
-            <!-- Detailed Summary Section -->
             <h3>Detailed Summary</h3>
             <div id="detailed-summary" class="detailed-summary">
                 <!-- Detailed per-file summary will be injected here via JavaScript -->
             </div>
         </div>
 
-        <!-- Notification Area -->
         <div class="notification" id="notification" aria-live="polite" role="alert"></div>
     </div>
 
-    <!-- Theme Toggle Button -->
     <div class="theme-toggle">
         <button id="theme-toggle-button">Switch to Dark Mode</button>
     </div>
 
-    <!-- Include the JavaScript file -->
     <script src="script.js"></script>
 </body>
 </html>

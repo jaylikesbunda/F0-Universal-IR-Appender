@@ -26,6 +26,8 @@ const elements = {
     buttonSummaryElem: document.getElementById('button-summary')
 };
 
+let omitRawSignals = false;
+
 // Allowed buttons per device type
 let allowedButtons = {
     'tv': ['Power', 'Vol_up', 'Vol_dn', 'Ch_next', 'Ch_prev', 'Mute'],
@@ -513,12 +515,20 @@ function matchAndRenameButton(buttonName, deviceType) {
     for (const [pattern, standardName] of Object.entries(mappings)) {
         const regex = new RegExp(`^${pattern}$`, 'i');
         if (regex.test(normalizedButton)) {
+            console.log(`Renamed "${buttonName}" to "${standardName}" for device type: ${deviceType}`);
             return standardName;
         }
     }
 
-    // If no match found, return the normalized button name
-    return normalizedButton;
+    // Special case for AC "dry" button
+    if (deviceType.toLowerCase() === 'ac' && normalizedButton.toLowerCase() === 'dry') {
+        console.log(`Renamed "dry" to "Dh" for AC`);
+        return 'Dh';
+    }
+
+    // If no match found, return the original button name
+    console.log(`No rename match found for "${buttonName}" in device type: ${deviceType}`);
+    return buttonName;
 }
 
 // Generate a unique key for a signal with improved normalization
@@ -777,23 +787,29 @@ function processRawSignal(signalLines, currentSignal, rawSignalCounter) {
     return { currentSignal, rawSignalCounter, signalLines };
 }
 
-// Helper function to process a single signal
+function toggleRawSignalOmission(omit) {
+    omitRawSignals = omit;
+}
 function processSingleSignal(signalLines, allowedButtonNamesLower, existingSignalsIndex, deviceType, stats) {
     let currentSignal = {};
     let includeSignal = false;
     let isRawSignal = false;
-    let rawSignalCounter = stats.unnamedRawCount;
 
     for (const line of signalLines) {
         if (line.trim().startsWith('name:')) {
-            const buttonName = line.split(':')[1].trim();
-            let normalizedName = normalizeButtonName(buttonName);
-            normalizedName = matchAndRenameButton(normalizedName, deviceType);
+            const originalButtonName = line.split(':')[1].trim();
+            const normalizedName = matchAndRenameButton(originalButtonName, deviceType);
             currentSignal.name = normalizedName;
             includeSignal = allowedButtonNamesLower.has(normalizedName.toLowerCase());
-            if (normalizedName !== buttonName) {
+            if (normalizedName !== originalButtonName) {
                 stats.renamedButtonCount++;
+                // Update the signalLines with the new name
+                signalLines = signalLines.map(l => 
+                    l.trim().startsWith('name:') ? `name: ${normalizedName}` : l
+                );
             }
+            // Log button renaming and inclusion/exclusion
+            console.log(`Button "${originalButtonName}" renamed to "${normalizedName}" - Included: ${includeSignal}`);
         } else if (line.trim().startsWith('type: raw')) {
             isRawSignal = true;
         } else if (!isRawSignal) {
@@ -804,7 +820,10 @@ function processSingleSignal(signalLines, allowedButtonNamesLower, existingSigna
     }
 
     if (isRawSignal) {
-        const result = processRawSignal(signalLines, currentSignal, rawSignalCounter);
+        if (omitRawSignals) {
+            return { includeSignal: false, signalLines: '' };
+        }
+        const result = processRawSignal(signalLines, currentSignal, stats.unnamedRawCount);
         currentSignal = result.currentSignal;
         stats.unnamedRawCount = result.rawSignalCounter;
         signalLines = result.signalLines;
@@ -818,19 +837,19 @@ function processSingleSignal(signalLines, allowedButtonNamesLower, existingSigna
             return { includeSignal: true, signalLines: signalLines.join('\n') };
         } else {
             stats.duplicateCount++;
+            console.log(`Duplicate signal found for button: ${currentSignal.name}`);
         }
     }
 
     return { includeSignal: false, signalLines: '' };
 }
-
-// Refactored filterIRContent function
 function filterIRContent(content, allowedButtonNames, existingSignalsIndex, stats, deviceType) {
     console.log("Filtering content with allowed buttons:", allowedButtonNames);
     const allowedButtonNamesLower = new Set(allowedButtonNames.map(name => name.toLowerCase()));
     const lines = content.split('\n');
     let filteredContent = '';
     let signalLines = [];
+    let hasNonRawSignals = false;
 
     for (let i = 0; i <= lines.length; i++) {
         let line = (i < lines.length) ? lines[i] : '#';
@@ -839,12 +858,20 @@ function filterIRContent(content, allowedButtonNames, existingSignalsIndex, stat
                 const result = processSingleSignal(signalLines, allowedButtonNamesLower, existingSignalsIndex, deviceType, stats);
                 if (result.includeSignal) {
                     filteredContent += result.signalLines + '\n#\n';
+                    if (!result.signalLines.includes('type: raw')) {
+                        hasNonRawSignals = true;
+                    }
                 }
                 signalLines = [];
             }
         } else {
             signalLines.push(line);
         }
+    }
+
+    // If omitting raw signals and there are no non-raw signals, return empty content
+    if (omitRawSignals && !hasNonRawSignals) {
+        return '';
     }
 
     return filteredContent.trim();
@@ -874,7 +901,6 @@ function parseIRFileSignals(content, allowedButtonNames) {
 
     return signals;
 }
-
 // Helper function to parse a signal from lines
 function parseSignalFromLines(lines) {
     let signal = {};
@@ -888,7 +914,7 @@ function parseSignalFromLines(lines) {
     return signal;
 }
 
-// The main processFiles function remains largely unchanged, but now uses these refactored functions
+// Updated function to process files
 async function processFiles(irFiles) {
     if (irFiles.length === 0) {
         showNotification('No .ir files selected. Please choose a folder containing .ir files.', 'error');
@@ -897,7 +923,7 @@ async function processFiles(irFiles) {
 
     const deviceTypeName = elements.deviceTypeSelect.options[elements.deviceTypeSelect.selectedIndex].text;
     const deviceTypeFileName = elements.deviceTypeSelect.value;
-    const deviceType = deviceTypeName.toLowerCase(); // Ensure lowercase
+    const deviceType = deviceTypeName.toLowerCase();
 
     console.log("Selected device type:", deviceType);
     console.log("Selected file name:", deviceTypeFileName);
@@ -938,7 +964,6 @@ async function processFiles(irFiles) {
             const fileIdentifier = `${file.name}-${file.size}`;
             if (processedFiles.has(fileIdentifier)) {
                 console.warn(`File "${file.name}" has already been processed. Skipping.`);
-                duplicateSignals += 1;
                 continue;
             }
             processedFiles.add(fileIdentifier);
@@ -1027,6 +1052,9 @@ async function processFiles(irFiles) {
         elements.progressContainer.style.display = 'none';
     }
 }
+
+
+// Updated function to update allowed buttons
 async function updateAllowedButtons() {
     const selectedRepo = elements.repoSelect.value;
     const repoInfo = REPOSITORIES[selectedRepo];
@@ -1086,6 +1114,11 @@ async function updateDeviceTypeOptions() {
 // =========================
 // Event Listeners and Initialization
 // =========================
+
+
+document.getElementById('omit-raw-signals').addEventListener('change', function(e) {
+    toggleRawSignalOmission(e.target.checked);
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     // Theme toggle
