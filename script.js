@@ -914,145 +914,206 @@ function parseSignalFromLines(lines) {
     return signal;
 }
 
-// Updated function to process files
 async function processFiles(irFiles) {
     if (irFiles.length === 0) {
         showNotification('No .ir files selected. Please choose a folder containing .ir files.', 'error');
         return;
     }
 
+    const { deviceType, deviceTypeFileName } = getDeviceTypeInfo();
+    const allowedButtonNames = getAllowedButtonNames(deviceType);
+    
+    initializeProcessing();
+    
+    const stats = initializeStats();
+    const detailedSummaryData = [];
+
+    try {
+        const universalIRContent = await fetchAndPrepareUniversalIRContent(deviceTypeFileName);
+        const existingSignalsIndex = parseUniversalIRFile(universalIRContent);
+
+        const processedFiles = new Set();
+        let updatedUniversalIRContent = universalIRContent;
+
+        for (let i = 0; i < irFiles.length; i++) {
+            const file = irFiles[i];
+            if (isFileDuplicate(file, processedFiles)) continue;
+            
+            stats.processedFilesCount++;
+            const fileStats = await processIndividualFile(file, allowedButtonNames, existingSignalsIndex, deviceType);
+            
+            updateStats(stats, fileStats);
+            detailedSummaryData.push(createDetailedSummaryEntry(file, fileStats));
+            
+            if (fileStats.filteredContent) {
+                updatedUniversalIRContent = appendToUniversalIRContent(updatedUniversalIRContent, fileStats.filteredContent, fileStats.deviceInfo);
+            }
+
+            updateProgress(((i + 1) / irFiles.length) * 100);
+        }
+
+        updateSummaryDisplay(stats, detailedSummaryData);
+        finishProcessing(updatedUniversalIRContent, deviceType);
+    } catch (error) {
+        handleProcessingError(error);
+    } finally {
+        cleanupProcessing();
+    }
+}
+
+function getDeviceTypeInfo() {
     const deviceTypeName = elements.deviceTypeSelect.options[elements.deviceTypeSelect.selectedIndex].text;
     const deviceTypeFileName = elements.deviceTypeSelect.value;
     const deviceType = deviceTypeName.toLowerCase();
-
     console.log("Selected device type:", deviceType);
     console.log("Selected file name:", deviceTypeFileName);
+    return { deviceType, deviceTypeFileName };
+}
 
+function getAllowedButtonNames(deviceType) {
     const allowedButtonNames = allowedButtons[deviceType] || [];
     console.log("Allowed buttons:", allowedButtonNames);
+    return allowedButtonNames;
+}
+
+function initializeProcessing() {
     elements.processButton.disabled = true;
     resetProgress();
     elements.progressContainer.style.display = 'block';
     elements.summary.classList.remove('show');
-    const detailedSummaryData = [];
-    let totalButtonCounts = {};
+}
 
-    let totalSignals = 0;
-    let newSignals = 0;
-    let duplicateSignals = 0;
-    let errorSignals = 0;
-    let totalUnnamedRaw = 0;
-    let totalRenamedButtons = 0;
+function initializeStats() {
+    return {
+        totalSignals: 0,
+        newSignals: 0,
+        duplicateSignals: 0,
+        errorSignals: 0,
+        totalUnnamedRaw: 0,
+        totalRenamedButtons: 0,
+        processedFilesCount: 0,
+        totalButtonCounts: {}
+    };
+}
 
-    const processedFiles = new Set();
+async function fetchAndPrepareUniversalIRContent(deviceTypeFileName) {
+    showNotification('Fetching latest universal IR file...', 'info');
+    let content = await fetchUniversalIRFile(deviceTypeFileName);
+    showNotification('Universal IR file successfully loaded.', 'success');
+    
+    content = content.trim();
+    while (content.endsWith('#') || content.endsWith('\n')) {
+        content = content.slice(0, -1).trimEnd();
+    }
+    return content + '\n#';
+}
+
+function isFileDuplicate(file, processedFiles) {
+    const fileIdentifier = `${file.name}-${file.size}`;
+    if (processedFiles.has(fileIdentifier)) {
+        console.warn(`File "${file.name}" has already been processed. Skipping.`);
+        return true;
+    }
+    processedFiles.add(fileIdentifier);
+    return false;
+}
+
+async function processIndividualFile(file, allowedButtonNames, existingSignalsIndex, deviceType) {
+    const stats = { duplicateCount: 0, buttonCounts: {}, unnamedRawCount: 0, renamedButtonCount: 0 };
+    let fileNewSignals = 0;
+    let fileErrorSignals = 0;
+    let fileErrorMessages = [];
 
     try {
-        showNotification('Fetching latest universal IR file...', 'info');
-        let universalIRContent = await fetchUniversalIRFile(deviceTypeFileName);
-        showNotification('Universal IR file successfully loaded.', 'success');
+        const content = await readFileContent(file);
+        const deviceInfo = extractDeviceInfo(content, file.name);
+        const filteredContent = filterIRContent(content, allowedButtonNames, existingSignalsIndex, stats, deviceType);
 
-        const existingSignalsIndex = parseUniversalIRFile(universalIRContent);
-
-        universalIRContent = universalIRContent.trim();
-        while (universalIRContent.endsWith('#') || universalIRContent.endsWith('\n')) {
-            universalIRContent = universalIRContent.slice(0, -1).trimEnd();
-        }
-        universalIRContent += '\n#';
-
-        for (let i = 0; i < irFiles.length; i++) {
-            const file = irFiles[i];
-            const fileIdentifier = `${file.name}-${file.size}`;
-            if (processedFiles.has(fileIdentifier)) {
-                console.warn(`File "${file.name}" has already been processed. Skipping.`);
-                continue;
-            }
-            processedFiles.add(fileIdentifier);
-
-            let fileNewSignals = 0;
-            let fileErrorSignals = 0;
-            let fileErrorMessages = [];
-            const stats = { duplicateCount: 0, buttonCounts: {}, unnamedRawCount: 0, renamedButtonCount: 0 };
-
-            try {
-                const content = await readFileContent(file);
-                const deviceInfo = extractDeviceInfo(content, file.name);
-                const filteredContent = filterIRContent(content, allowedButtonNames, existingSignalsIndex, stats, deviceType);
-
-                if (filteredContent) {
-                    const commentLine = `# Model: ${deviceInfo}\n#\n`;
-                    universalIRContent += `${commentLine}${filteredContent.trim()}\n`;
-
-                    const signals = parseIRFileSignals(filteredContent, allowedButtonNames);
-                    fileNewSignals = signals.length;
-                    newSignals += fileNewSignals;
-                    duplicateSignals += stats.duplicateCount;
-                    totalUnnamedRaw += stats.unnamedRawCount;
-                    totalRenamedButtons += stats.renamedButtonCount;
-
-                    // Aggregate button counts
-                    for (const [button, count] of Object.entries(stats.buttonCounts)) {
-                        totalButtonCounts[button] = (totalButtonCounts[button] || 0) + count;
-                    }
-                }
-
-                updateProgress(((i + 1) / irFiles.length) * 100);
-            } catch (fileError) {
-                console.error(`Error processing file "${file.name}":`, fileError);
-                fileErrorMessages.push(fileError.message);
-                fileErrorSignals++;
-                errorSignals++;
-            }
-
-            detailedSummaryData.push({
-                fileName: file.name,
-                newSignals: fileNewSignals,
-                duplicateSignals: stats.duplicateCount,
-                errorSignals: fileErrorSignals,
-                errorMessages: fileErrorMessages,
-                buttonCounts: stats.buttonCounts,
-                unnamedRawCount: stats.unnamedRawCount,
-                renamedButtonCount: stats.renamedButtonCount
-            });
+        if (filteredContent) {
+            const signals = parseIRFileSignals(filteredContent, allowedButtonNames);
+            fileNewSignals = signals.length;
         }
 
-        totalSignals = newSignals + duplicateSignals;
-        elements.totalSignalsElem.textContent = totalSignals;
-        elements.newSignalsElem.textContent = newSignals;
-        elements.duplicateSignalsElem.textContent = duplicateSignals;
-        elements.errorSignalsElem.textContent = errorSignals;
-
-        // Update unnamed raw signals count in the summary
-        const unnamedRawElem = document.getElementById('unnamed-raw');
-        if (unnamedRawElem) {
-            unnamedRawElem.textContent = totalUnnamedRaw;
-        }
-
-        // Update renamed buttons count in the summary
-        const renamedButtonsElem = document.getElementById('renamed-buttons');
-        if (renamedButtonsElem) {
-            renamedButtonsElem.textContent = totalRenamedButtons;
-        }
-
-        populateDetailedSummary(detailedSummaryData);
-        updateButtonSummary(totalButtonCounts, totalUnnamedRaw, totalRenamedButtons);
-        elements.summary.classList.add('show');
-        elements.exportSummaryBtn.disabled = false;
-        elements.copySummaryBtn.disabled = false;
-
-        showNotification('IR files have been successfully appended to the universal IR file.', 'success');
-
-        const selectedRepo = elements.repoSelect.value;
-        const downloadFileName = `${selectedRepo.toLowerCase()}-universal-ir-${deviceTypeName.replace(/\s+/g, '-').toLowerCase()}.ir`;
-        downloadFile(universalIRContent, downloadFileName);
-    } catch (error) {
-        console.error('Error during processing:', error);
-        showNotification(error.message, 'error');
-    } finally {
-        elements.processButton.disabled = false;
-        elements.progressContainer.style.display = 'none';
+        return { ...stats, fileNewSignals, deviceInfo, filteredContent };
+    } catch (fileError) {
+        console.error(`Error processing file "${file.name}":`, fileError);
+        fileErrorMessages.push(fileError.message);
+        fileErrorSignals++;
+        return { ...stats, fileErrorSignals, fileErrorMessages };
     }
 }
 
+function updateStats(globalStats, fileStats) {
+    globalStats.newSignals += fileStats.fileNewSignals;
+    globalStats.duplicateSignals += fileStats.duplicateCount;
+    globalStats.totalUnnamedRaw += fileStats.unnamedRawCount;
+    globalStats.totalRenamedButtons += fileStats.renamedButtonCount;
+    globalStats.errorSignals += fileStats.fileErrorSignals || 0;
+
+    for (const [button, count] of Object.entries(fileStats.buttonCounts)) {
+        globalStats.totalButtonCounts[button] = (globalStats.totalButtonCounts[button] || 0) + count;
+    }
+}
+
+function createDetailedSummaryEntry(file, fileStats) {
+    return {
+        fileName: file.name,
+        newSignals: fileStats.fileNewSignals,
+        duplicateSignals: fileStats.duplicateCount,
+        errorSignals: fileStats.fileErrorSignals || 0,
+        errorMessages: fileStats.fileErrorMessages || [],
+        buttonCounts: fileStats.buttonCounts,
+        unnamedRawCount: fileStats.unnamedRawCount,
+        renamedButtonCount: fileStats.renamedButtonCount
+    };
+}
+
+function appendToUniversalIRContent(universalIRContent, filteredContent, deviceInfo) {
+    const commentLine = `# Model: ${deviceInfo}\n#\n`;
+    return universalIRContent + `${commentLine}${filteredContent.trim()}\n`;
+}
+
+function updateSummaryDisplay(stats, detailedSummaryData) {
+    const totalSignals = stats.newSignals + stats.duplicateSignals;
+    elements.totalFilesElem.textContent = stats.processedFilesCount;
+    elements.totalSignalsElem.textContent = totalSignals;
+    elements.newSignalsElem.textContent = stats.newSignals;
+    elements.duplicateSignalsElem.textContent = stats.duplicateSignals;
+    elements.errorSignalsElem.textContent = stats.errorSignals;
+
+    const unnamedRawElem = document.getElementById('unnamed-raw');
+    if (unnamedRawElem) {
+        unnamedRawElem.textContent = stats.totalUnnamedRaw;
+    }
+
+    const renamedButtonsElem = document.getElementById('renamed-buttons');
+    if (renamedButtonsElem) {
+        renamedButtonsElem.textContent = stats.totalRenamedButtons;
+    }
+
+    populateDetailedSummary(detailedSummaryData);
+    updateButtonSummary(stats.totalButtonCounts, stats.totalUnnamedRaw, stats.totalRenamedButtons);
+    elements.summary.classList.add('show');
+    elements.exportSummaryBtn.disabled = false;
+    elements.copySummaryBtn.disabled = false;
+}
+
+function finishProcessing(universalIRContent, deviceType) {
+    showNotification('IR files have been successfully appended to the universal IR file.', 'success');
+    const selectedRepo = elements.repoSelect.value;
+    const downloadFileName = `${selectedRepo.toLowerCase()}-universal-ir-${deviceType.replace(/\s+/g, '-')}.ir`;
+    downloadFile(universalIRContent, downloadFileName);
+}
+
+function handleProcessingError(error) {
+    console.error('Error during processing:', error);
+    showNotification(error.message, 'error');
+}
+
+function cleanupProcessing() {
+    elements.processButton.disabled = false;
+    elements.progressContainer.style.display = 'none';
+}
 
 // Updated function to update allowed buttons
 async function updateAllowedButtons() {
@@ -1228,8 +1289,8 @@ function resetProgress() {
     elements.copySummaryBtn.disabled = true;
 }
 
-// Reset summary counts
 function resetSummary() {
+    elements.totalFilesElem.textContent = '0';
     elements.totalSignalsElem.textContent = '0';
     elements.newSignalsElem.textContent = '0';
     elements.duplicateSignalsElem.textContent = '0';
