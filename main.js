@@ -41,8 +41,8 @@ function toggleRawSignalOmission(omit) {
     omitRawSignals = omit;
 }
 
-// Function to process a single signal
 function processSingleSignal(signalLines, allowedButtonNamesLower, existingSignalsIndex, localSignalsIndex, deviceType, fileStats, matchedButtons) {
+    console.log('Processing new signal...');
     let currentSignal = {};
     let includeSignal = false;
     let isRawSignal = false;
@@ -53,41 +53,42 @@ function processSingleSignal(signalLines, allowedButtonNamesLower, existingSigna
             originalButtonName = line.split(':')[1].trim();
             const normalizedName = matchAndRenameButton(originalButtonName, deviceType);
             currentSignal.name = normalizedName;
+            console.log(`Original button name: "${originalButtonName}", Normalized name: "${normalizedName}"`);
 
             if (matchedButtons[normalizedName]) {
                 const currentSimilarity = calculateStringSimilarity(originalButtonName, normalizedName);
+                console.log(`Existing match found for "${normalizedName}". Current similarity: ${currentSimilarity}, Existing similarity: ${matchedButtons[normalizedName].similarity}`);
                 if (currentSimilarity > matchedButtons[normalizedName].similarity) {
-                    // This match is better, so we'll use this one instead
-                    console.log(`Replacing "${matchedButtons[normalizedName].original}" with "${originalButtonName}" for "${normalizedName}"`);
+                    console.log(`New match is better. Replacing "${matchedButtons[normalizedName].original}" with "${originalButtonName}" for "${normalizedName}"`);
                     matchedButtons[normalizedName] = {
                         original: originalButtonName,
                         similarity: currentSimilarity,
                         signalLines: signalLines.map(l => l.startsWith('name:') ? `name: ${normalizedName}` : l)
                     };
                     includeSignal = allowedButtonNamesLower.has(normalizedName.toLowerCase());
+                    console.log(`Signal inclusion decision: ${includeSignal}`);
                 } else {
-                    // The existing match is better, so we'll skip this signal
-                    console.log(`Skipping "${originalButtonName}" in favor of existing "${matchedButtons[normalizedName].original}" for "${normalizedName}"`);
+                    console.log(`Existing match is better. Skipping "${originalButtonName}" in favor of existing "${matchedButtons[normalizedName].original}" for "${normalizedName}"`);
                     includeSignal = false;
                 }
             } else {
-                // This is the first match for this normalized name in this file
+                console.log(`First match for "${normalizedName}" in this file`);
                 matchedButtons[normalizedName] = {
                     original: originalButtonName,
                     similarity: calculateStringSimilarity(originalButtonName, normalizedName),
                     signalLines: signalLines.map(l => l.startsWith('name:') ? `name: ${normalizedName}` : l)
                 };
                 includeSignal = allowedButtonNamesLower.has(normalizedName.toLowerCase());
+                console.log(`Signal inclusion decision: ${includeSignal}`);
             }
 
-            // Only increment renamedButtonCount if the name was changed and the signal is included
             if (normalizedName !== originalButtonName && includeSignal) {
                 fileStats.renamedButtonCount++;
+                console.log(`Renamed button count incremented. New count: ${fileStats.renamedButtonCount}`);
             }
-            // Log button renaming and inclusion/exclusion
-            console.log(`Button "${originalButtonName}" renamed to "${normalizedName}" - Included: ${includeSignal}`);
         } else if (line.trim().startsWith('type: raw')) {
             isRawSignal = true;
+            console.log('Raw signal detected');
         } else if (!isRawSignal) {
             if (line.trim().startsWith('protocol:')) currentSignal.protocol = line.split(':')[1].trim();
             else if (line.trim().startsWith('address:')) currentSignal.address = line.split(':')[1].trim();
@@ -96,34 +97,41 @@ function processSingleSignal(signalLines, allowedButtonNamesLower, existingSigna
     }
 
     if (isRawSignal) {
+        console.log('Processing raw signal...');
         if (omitRawSignals) {
+            console.log('Raw signals are set to be omitted. Skipping this signal.');
             return { includeSignal: false, signalLines: '', updatedLocalSignalsIndex: localSignalsIndex };
         }
         const result = processRawSignal(signalLines, currentSignal, fileStats.unnamedRawCount);
         currentSignal = result.currentSignal;
         fileStats.unnamedRawCount = result.rawSignalCounter;
         signalLines = result.signalLines;
+        console.log(`Raw signal processed. New unnamed raw count: ${fileStats.unnamedRawCount}`);
     }
 
     if (includeSignal && isValidSignal(currentSignal)) {
+        console.log('Signal is valid and set to be included. Checking for duplicates...');
         const key = generateSignalKey(currentSignal);
 
-        // Check against existingSignalsIndex for duplicates in the universal IR file and previous files
         const isDuplicateInExisting = isDuplicateSignal(currentSignal, existingSignalsIndex);
-        // Check against localSignalsIndex for duplicates within the same file
         const isDuplicateInLocal = localSignalsIndex.has(key);
 
+        console.log(`Duplicate check results - In existing: ${isDuplicateInExisting}, In local: ${isDuplicateInLocal}`);
+
         if (!isDuplicateInExisting && !isDuplicateInLocal) {
-            // Update localSignalsIndex to keep track within the same file
+            console.log('Signal is not a duplicate. Adding to local index.');
             localSignalsIndex.set(key, currentSignal);
             fileStats.buttonCounts[currentSignal.name] = (fileStats.buttonCounts[currentSignal.name] || 0) + 1;
-            // Increment newSignals only when the signal is actually added
             fileStats.newSignals++;
+            console.log(`New signal added. Button count for "${currentSignal.name}": ${fileStats.buttonCounts[currentSignal.name]}, Total new signals: ${fileStats.newSignals}`);
             return { includeSignal: true, signalLines: signalLines.join('\n'), updatedLocalSignalsIndex: localSignalsIndex };
         } else {
+            console.log('Signal is a duplicate. Incrementing duplicate count.');
             fileStats.duplicateCount++;
-            console.log(`Duplicate signal found for button: ${currentSignal.name}`);
+            console.log(`Duplicate signal found for button: ${currentSignal.name}. New duplicate count: ${fileStats.duplicateCount}`);
         }
+    } else {
+        console.log(`Signal excluded. Valid: ${isValidSignal(currentSignal)}, Include flag: ${includeSignal}`);
     }
 
     return { includeSignal: false, signalLines: '', updatedLocalSignalsIndex: localSignalsIndex };
@@ -492,11 +500,33 @@ function updateSummaryDisplay(stats) {
     elements.copySummaryBtn.disabled = false;
 }
 
-// Function to finalize processing
+function generateDownloadFileName(universalFileSource, deviceType) {
+    const sanitizedDeviceType = deviceType.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+    
+    let prefix;
+    if (universalFileSource === 'custom') {
+        prefix = 'custom';
+    } else {
+        // Assuming universalFileSource is the repository name when not custom
+        prefix = REPOSITORIES[universalFileSource].repoShortName || universalFileSource.toLowerCase();
+    }
+    
+    const baseName = `${prefix}-universal-ir-${sanitizedDeviceType}`;
+    const maxLength = 100; // Reduced max length since we're not including the timestamp
+    const truncatedName = baseName.slice(0, maxLength);
+    
+    return `${truncatedName}.ir`;
+}
+
 function finishProcessing(universalIRContent, deviceType) {
     showNotification('IR files have been successfully appended to the universal IR file.', 'success');
-    const selectedRepo = elements.repoSelect.value;
-    const downloadFileName = `${selectedRepo.toLowerCase()}-universal-ir-${deviceType.replace(/\s+/g, '-')}.ir`;
+    
+    // Determine the source of the universal file
+    const universalFileSource = document.querySelector('input[name="universal-file-option"]:checked').value === 'fetch'
+        ? elements.repoSelect.value
+        : 'custom';
+    
+    const downloadFileName = generateDownloadFileName(universalFileSource, deviceType);
     downloadFile(universalIRContent, downloadFileName);
 
     // Enable export and copy buttons
