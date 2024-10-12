@@ -5,9 +5,10 @@
     <title>Universal IR Appender</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="light-mode">
+
+
     <div class="container">
-        <h1>Universal IR Appender v1.6</h1>
+        <h1>Universal IR Appender v1.8</h1>
 
         <div class="instructions">
             <h2>How to Use</h2>
@@ -55,20 +56,37 @@
             </p>
         </div>
 
-        <label for="file-input">Select the Folder Containing .ir Files</label>
-        <div class="file-input-wrapper">
-            <input type="file" id="file-input" webkitdirectory multiple />
-            <label for="file-input" class="custom-file-label">Choose Folder...</label>
+
+        <div class="universal-file-upload">
+            <h3>Universal File</h3>
+            <div class="radio-group">
+                <input type="radio" id="fetch-universal" name="universal-file-option" value="fetch" checked>
+                <label for="fetch-universal">Fetch from repository</label>
+                
+                <input type="radio" id="upload-universal" name="universal-file-option" value="upload">
+                <label for="upload-universal">Upload manually</label>
+            </div>
+            <div id="repo-select-container">
+                <label for="repo-select">Select the Firmware Type</label>
+                <select id="repo-select">
+                    <!-- Options will be populated dynamically via JavaScript -->
+                </select>
+            </div>
+            <div id="manual-upload-container" class="hidden">
+                <label for="manual-universal-file">Upload Universal File</label>
+                <input type="file" id="manual-universal-file" accept=".ir">
+                <p id="manual-file-name"></p>
+            </div>
+            <div class="file-input-wrapper">
+                <input type="file" id="file-input" webkitdirectory directory multiple />
+                <label for="file-input" class="custom-file-label">Choose Folder...</label>
+            </div>
         </div>
+
         <p id="file-count">0 .ir files selected</p>
-        <p id="browser-warning" style="display: none; color: red;">
+        <p id="browser-warning" class="hidden">
             Your browser does not support folder selection. Please select multiple .ir files individually.
         </p>
-
-        <label for="device-type">Select the Firmware Type</label>
-        <select id="repo-select">
-            <!-- Options will be populated dynamically via JavaScript -->
-        </select>
 
         <label for="device-type">Select the Device Type</label>
         <select id="device-type">
@@ -82,7 +100,7 @@
         
         <button id="process-btn">Append to Universal IR File</button>
 
-        <div class="progress-container" id="progress-container">
+        <div class="progress-container hidden" id="progress-container" aria-live="polite">
             <div class="progress-bar" id="progress-bar">0%</div>
         </div>
 
@@ -135,13 +153,17 @@
             </div>
         </div>
 
-        <div class="notification" id="notification" aria-live="polite" role="alert"></div>
+        <body class="light-mode">
+            <div class="theme-toggle">
+                <button id="theme-toggle-button">Switch to Dark Mode</button>
+
+        <div class="notification hidden" id="notification" aria-live="polite" role="alert"></div>
     </div>
 
-    <div class="theme-toggle">
-        <button id="theme-toggle-button">Switch to Dark Mode</button>
-    </div>
-
-    <script src="script.js"></script>
+    <script src="constants.js"></script>
+    <script src="utils.js"></script>
+    <script src="github-api.js"></script>
+    <script src="main.js"></script>
+    <script src="event-listeners.js"></script>
 </body>
 </html>
