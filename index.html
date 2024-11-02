@@ -8,7 +8,7 @@
 
 
     <div class="container">
-        <h1>Universal IR Appender v1.8.2</h1>
+        <h1>Universal IR Appender v1.9</h1>
 
         <div class="instructions">
             <h2>How to Use</h2>
@@ -29,7 +29,20 @@
                         <li>Read each of your `.ir` files and extract the infrared signals.</li>
                         <li>Compare the signals against a list of allowed buttons for the device type to filter out unwanted signals.</li>
                         <li>Rename buttons as necessary to match standard names.</li>
-                        <li>Avoid adding duplicate signals by checking against existing ones in the universal file.</li>
+                        <li>Perform multi-stage duplicate checking:
+                            <ul>
+                                <li>Check for duplicates against existing signals in the universal file</li>
+                                <li>Check for duplicates within the current file being processed</li>
+                                <li>Perform a final pass to detect and remove any remaining duplicates based on signal content</li>
+                            </ul>
+                        </li>
+                        <li>For duplicate signals, intelligently select the highest quality version by:
+                            <ul>
+                                <li>Preferring parsed signals over raw signals</li>
+                                <li>Selecting signals with complete protocol, address, and command data</li>
+                                <li>For raw signals, preferring those with duty cycle information</li>
+                            </ul>
+                        </li>
                         <li>Append new and valid signals to the universal IR file content.</li>
                     </ul>
                     <p>The progress bar will display the processing status as your files are being processed.</p>
@@ -42,11 +55,12 @@
                         <li>Total signals found, new signals added, duplicate signals, and any errors encountered.</li>
                         <li>Counts of each type of button processed.</li>
                         <li>Details about unnamed raw signals and renamed buttons.</li>
+                        <li>The number of additional duplicates removed in the final quality check.</li>
                     </ul>
                     <p>You can export the summary as JSON or CSV files using the "Export Summary" button or copy it to your clipboard using the "Copy Summary" button.</p>
                 </li>
             </ol>
-
+        
             <h2>Device Naming Guidelines</h2>
             <p>
                 The application attempts to extract the device's <strong>Brand</strong> and <strong>Model</strong> from the content of your `.ir` files. If this information is not found within the file, it will try to infer it from the filename, expecting the format <em>Brand_Model.ir</em> (e.g., <em>Samsung_TV.ir</em>). This helps organize the universal IR file by grouping signals under the correct device identifiers.
@@ -55,7 +69,6 @@
                 <strong>Fallback:</strong> If the application cannot extract the Brand and Model from either the file content or filename, it will use the entire filename (without the `.ir` extension) as the device identifier. While this ensures all signals are included, following the naming guidelines is recommended for better organization.
             </p>
         </div>
-
 
         <div class="universal-file-upload">
             <h3>Universal File</h3>
@@ -92,6 +105,13 @@
         <select id="device-type">
             <!-- Device types will be populated dynamically -->
         </select>
+
+        <div id="custom-buttons-container" class="hidden">
+            <h3>Select Custom Buttons</h3>
+            <div id="custom-buttons-list">
+                <!-- Custom buttons will be populated dynamically -->
+            </div>
+        </div>
 
         <div class="checkbox-container">
             <input type="checkbox" id="omit-raw-signals" name="omit-raw-signals">

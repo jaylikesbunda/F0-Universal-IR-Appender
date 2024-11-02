@@ -235,7 +235,6 @@ function parseSignalFromLines(lines) {
     return signal;
 }
 
-// Main function to process files
 async function processFiles(irFiles) {
     if (irFiles.length === 0) {
         showNotification('No .ir files selected. Please choose a folder containing .ir files.', 'error');
@@ -246,8 +245,6 @@ async function processFiles(irFiles) {
     const allowedButtonNames = getAllowedButtonNames(deviceType);
 
     initializeProcessing();
-
-    // Reset stats object
     resetStats(stats);
 
     try {
@@ -282,19 +279,199 @@ async function processFiles(irFiles) {
                 updatedUniversalIRContent = appendToUniversalIRContent(updatedUniversalIRContent, fileStats.filteredContent, fileStats.deviceInfo);
             }
 
-            // Update existingSignalsIndex with signals from the current file
             existingSignalsIndex = new Map([...existingSignalsIndex, ...fileStats.updatedSignalsIndex]);
-
             updateProgress(((i + 1) / irFiles.length) * 100);
         }
 
+        // Perform final duplicate check
+        console.log('Performing final duplicate check...');
+        const { content: finalContent, duplicatesRemoved } = performFinalDuplicateCheck(updatedUniversalIRContent);
+        stats.duplicateSignals += duplicatesRemoved;
+        console.log(`Final duplicate check removed ${duplicatesRemoved} additional duplicates`);
+
         updateSummaryDisplay(stats);
-        finishProcessing(updatedUniversalIRContent, deviceType);
+        finishProcessing(finalContent, deviceType);
     } catch (error) {
         handleProcessingError(error);
     } finally {
         cleanupProcessing();
     }
+}
+
+function performFinalDuplicateCheck(content) {
+    const uniqueEntries = new Map();
+    const uniquePayloads = new Set();
+    let duplicatesRemoved = 0;
+    
+    // Split content into sections
+    let sections = [];
+    let currentSection = [];
+    let currentComments = [];
+    let headerContent = [];
+    let inHeader = true;
+
+    const lines = content.split('\n');
+    
+    // First pass: Split into sections and extract header
+    for (const line of lines) {
+        if (inHeader) {
+            if (line.trim().startsWith('name:')) {
+                inHeader = false;
+                currentSection.push(line);
+            } else {
+                headerContent.push(line);
+                continue;
+            }
+        } else if (line.trim() === '#') {
+            if (currentSection.length > 0) {
+                sections.push({
+                    comments: [...currentComments],
+                    content: [...currentSection]
+                });
+                currentSection = [];
+                currentComments = [];
+            }
+        } else if (line.trim().startsWith('#')) {
+            if (line.trim() !== '#') {
+                currentComments.push(line);
+            }
+        } else if (line.trim()) {
+            currentSection.push(line);
+        }
+    }
+
+    // Add last section if exists
+    if (currentSection.length > 0) {
+        sections.push({
+            comments: [...currentComments],
+            content: [...currentSection]
+        });
+    }
+
+    // Second pass: Process each section and check for duplicates
+    const processedSections = sections.filter(section => {
+        const entry = parseSection(section.content);
+        if (!entry) return true; // Keep sections we couldn't parse
+
+        const payload = generatePayload(entry);
+        if (!payload) return true; // Keep sections without valid payload
+
+        const key = `${entry.name}${payload}`;
+
+        if (!uniqueEntries.has(key)) {
+            uniqueEntries.set(key, section);
+            uniquePayloads.add(payload);
+            return true;
+        } else {
+            // If we find a duplicate, check which version to keep
+            const existing = parseSection(uniqueEntries.get(key).content);
+            if (shouldReplaceExisting(entry, existing)) {
+                uniqueEntries.set(key, section);
+            }
+            duplicatesRemoved++;
+            return false;
+        }
+    });
+
+    // Rebuild content
+    let result = [...headerContent];
+    processedSections.forEach((section, index) => {
+        // Add comments
+        if (section.comments.length > 0) {
+            result.push(...section.comments);
+        }
+        // Add content
+        result.push(...section.content);
+        // Add separator if not last section
+        if (index < processedSections.length - 1) {
+            result.push('#');
+        }
+    });
+
+    return {
+        content: result.join('\n'),
+        duplicatesRemoved
+    };
+}
+
+function parseSection(lines) {
+    let entry = {
+        name: '',
+        type: '',
+        protocol: '',
+        address: '',
+        command: '',
+        frequency: '',
+        duty_cycle: '',
+        data: ''
+    };
+
+    for (const line of lines) {
+        const [key, ...valueParts] = line.split(':');
+        const value = valueParts.join(':').trim();
+        
+        switch (key.trim().toLowerCase()) {
+            case 'name':
+                entry.name = value;
+                break;
+            case 'type':
+                entry.type = value;
+                break;
+            case 'protocol':
+                entry.protocol = value;
+                break;
+            case 'address':
+                entry.address = value;
+                break;
+            case 'command':
+                entry.command = value;
+                break;
+            case 'frequency':
+                entry.frequency = value;
+                break;
+            case 'duty_cycle':
+                entry.duty_cycle = value;
+                break;
+            case 'data':
+                entry.data = value;
+                break;
+        }
+    }
+
+    return entry.name ? entry : null;
+}
+
+function generatePayload(entry) {
+    if (entry.type === 'parsed') {
+        return `${entry.protocol}${entry.address}${entry.command}`;
+    } else if (entry.type === 'raw') {
+        return `${entry.frequency}${entry.duty_cycle}${entry.data}`;
+    }
+    return null;
+}
+
+function shouldReplaceExisting(newEntry, existingEntry) {
+    // Prefer parsed over raw
+    if (newEntry.type !== existingEntry.type) {
+        return newEntry.type === 'parsed';
+    }
+
+    if (newEntry.type === 'parsed') {
+        // For parsed signals, prefer ones with more complete data
+        const newComplete = Boolean(newEntry.protocol && newEntry.address && newEntry.command);
+        const existingComplete = Boolean(existingEntry.protocol && existingEntry.address && existingEntry.command);
+        if (newComplete !== existingComplete) {
+            return newComplete;
+        }
+    } else {
+        // For raw signals, prefer ones with duty cycle specified
+        if (Boolean(newEntry.duty_cycle) !== Boolean(existingEntry.duty_cycle)) {
+            return Boolean(newEntry.duty_cycle);
+        }
+    }
+
+    // Default to keeping existing
+    return false;
 }
 
 // Function to reset stats
@@ -803,3 +980,4 @@ function copySummaryToClipboard() {
         document.body.removeChild(textarea);
     }
 }
+
