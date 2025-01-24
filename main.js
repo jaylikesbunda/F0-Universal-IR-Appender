@@ -42,6 +42,10 @@ function toggleRawSignalOmission(omit) {
 }
 
 function processSingleSignal(signalLines, allowedButtonNamesLower, existingSignalsIndex, localSignalsIndex, deviceType, fileStats, matchedButtons) {
+    // Clean up signal lines first
+    signalLines = signalLines.map(line => line.split('#')[0].trimEnd());
+    signalLines = signalLines.filter(line => line.length > 0); // Remove empty lines
+
     console.log('Processing new signal...');
     let currentSignal = {};
     let includeSignal = false;
@@ -167,7 +171,9 @@ function filterIRContent(content, allowedButtonNames, existingSignalsIndex, file
     // Process the matched buttons
     for (const [normalizedName, buttonData] of Object.entries(matchedButtons)) {
         if (allowedButtonNamesLower.has(normalizedName.toLowerCase())) {
-            filteredContent += buttonData.signalLines.join('\n') + '\n#\n';
+            // Remove any existing trailing # before adding
+            const cleanSignal = buttonData.signalLines.join('\n').replace(/#\s*$/, '');
+            filteredContent += `\n${cleanSignal}\n#\n`;
             if (!buttonData.signalLines.join('\n').includes('type: raw')) {
                 hasNonRawSignals = true;
             }
@@ -279,7 +285,11 @@ async function processFiles(irFiles) {
                 updatedUniversalIRContent = appendToUniversalIRContent(updatedUniversalIRContent, fileStats.filteredContent, fileStats.deviceInfo);
             }
 
+            const previousSize = existingSignalsIndex.size;
             existingSignalsIndex = new Map([...existingSignalsIndex, ...fileStats.updatedSignalsIndex]);
+            const newSignalsInFile = existingSignalsIndex.size - previousSize;
+            stats.newSignals += newSignalsInFile;
+
             updateProgress(((i + 1) / irFiles.length) * 100);
         }
 
@@ -373,20 +383,34 @@ function performFinalDuplicateCheck(content) {
         }
     });
 
-    // Rebuild content
+    // Rebuild content with proper formatting
     let result = [...headerContent];
     processedSections.forEach((section, index) => {
-        // Add comments
+        // Add model comment and enforce separator
+        const modelComment = section.comments.find(c => c.startsWith('# Model:'));
+        if (modelComment) {
+            result.push(modelComment, '#');
+            section.comments = section.comments.filter(c => c !== modelComment);
+        }
+        
+        // Add remaining comments
         if (section.comments.length > 0) {
             result.push(...section.comments);
         }
-        // Add content
+        
+        // Add content lines
         result.push(...section.content);
-        // Add separator if not last section
+        
+        // Add section separator
         if (index < processedSections.length - 1) {
             result.push('#');
         }
     });
+
+    // Ensure final separator
+    if (result.length > 0 && !result[result.length-1].startsWith('#')) {
+        result.push('#');
+    }
 
     return {
         content: result.join('\n'),
@@ -647,8 +671,11 @@ function createDetailedSummaryEntry(file, fileStats) {
 
 // Function to append filtered content to the universal IR content
 function appendToUniversalIRContent(universalIRContent, filteredContent, deviceInfo) {
-    const commentLine = `# Model: ${deviceInfo}\n#\n`;
-    return universalIRContent + `${commentLine}${filteredContent.trim()}\n`;
+    const separator = '\n#\n';
+    // Remove any existing trailing #
+    universalIRContent = universalIRContent.replace(/#\s*$/, '');
+    const commentLine = `\n# Model: ${deviceInfo}${separator}`;
+    return `${universalIRContent}${commentLine}${filteredContent}`;
 }
 
 // Function to update the summary display in the UI

@@ -89,22 +89,16 @@ function capitalizeButtonName(buttonName, deviceType) {
     const normalizedButtonName = buttonName.toLowerCase();
     
     // Check if the button name is in the allowed buttons list (case-insensitive)
-    for (const allowedButton of allowedButtonsForType) {
-        if (allowedButton.toLowerCase() === normalizedButtonName) {
-            return allowedButton; // Return the correctly capitalized button name
-        }
+    const matchedButton = allowedButtonsForType.find(
+        allowedButton => allowedButton.toLowerCase() === normalizedButtonName
+    );
+    
+    if (matchedButton) {
+        return matchedButton; // Return the exact capitalization from allowedButtons
     }
     
-    // Special handling for AC device type
-    if (deviceType.toLowerCase() === 'ac') {
-        if (normalizedButtonName.includes('power') || normalizedButtonName.includes('off')) {
-            return 'Off';
-        }
-        // Add more special cases for AC if needed
-    }
-    
-    // If no match found in allowed buttons, capitalize first letter of each word
-    return buttonName.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+    // If no match found, use the original button name
+    return buttonName;
 }
 
 function generateSignalKey(signal) {
